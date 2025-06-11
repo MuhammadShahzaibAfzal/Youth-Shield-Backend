@@ -3,13 +3,13 @@ import { FileStorage } from "../types/storage";
 import { UploadedFile } from "express-fileupload";
 import { v4 as uuidv4 } from "uuid";
 import createHttpError from "http-errors";
-import BlogService from "../services/BlogService";
+import NewsService from "../services/NewsService";
 import CategoryService from "../services/CategoryService";
 
-class BlogController {
+class NewsController {
   constructor(
     private storage: FileStorage,
-    private blogService: BlogService,
+    private newsService: NewsService,
     private categoryService: CategoryService
   ) {}
 
@@ -27,9 +27,7 @@ class BlogController {
         contentType: image.mimetype,
       });
 
-      res.json({
-        url,
-      });
+      res.json({ url });
     } catch (error) {
       next(error);
     }
@@ -52,12 +50,12 @@ class BlogController {
         contentType: image.mimetype,
       });
 
-      const blog = await this.blogService.createBlog({
+      const news = await this.newsService.createNews({
         ...req.body,
         coverImage: url,
         SEO: parsedSEO,
       });
-      res.status(201).json(blog);
+      res.status(201).json(news);
     } catch (error) {
       next(error);
     }
@@ -65,29 +63,30 @@ class BlogController {
 
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const blogs = await this.blogService.getAll();
-      res.status(200).json({ blogs });
+      const news = await this.newsService.getAll();
+      res.status(200).json({ news });
     } catch (error) {
       next(error);
     }
   }
 
-  async getBlogs(req: Request, res: Response, next: NextFunction) {
+  async getNews(req: Request, res: Response, next: NextFunction) {
     const { limit, page, category } = req.query;
     try {
       const pageNumber = parseInt(page as string) || 1;
       const limitNumber = parseInt(limit as string) || 10;
       const skip = (pageNumber - 1) * limitNumber;
 
-      const { blogs, total } = await this.blogService.getBlogs({
+      const { news, total } = await this.newsService.getNews({
         skip,
         limit: limitNumber,
         categorySlug: category as string,
       });
       const categories = await this.categoryService.getAll();
-      const { blogs: recent } = await this.blogService.getRecent(1, false);
+      const { news: recent } = await this.newsService.getRecent(1, false);
+
       res.status(200).json({
-        blogs,
+        news,
         categories,
         currentPage: pageNumber,
         totalPages: Math.ceil(total / limitNumber),
@@ -103,8 +102,8 @@ class BlogController {
   async getOne(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const blog = await this.blogService.getBlogById(id);
-      res.status(200).json(blog);
+      const news = await this.newsService.getNewsById(id);
+      res.status(200).json(news);
     } catch (error) {
       next(error);
     }
@@ -113,8 +112,8 @@ class BlogController {
   async delete(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     try {
-      const blog = await this.blogService.deleteBlog(id);
-      res.status(200).json(blog);
+      const news = await this.newsService.deleteNews(id);
+      res.status(200).json(news);
     } catch (error) {
       next(error);
     }
@@ -126,11 +125,11 @@ class BlogController {
 
     try {
       const parsedSEO = JSON.parse(SEO);
-      // check blog exist or not
-      const blogExist = await this.blogService.getBlogById(id);
-      if (!blogExist) {
-        return next(createHttpError(404, "Blog not found"));
+      const newsExist = await this.newsService.getNewsById(id);
+      if (!newsExist) {
+        return next(createHttpError(404, "News not found"));
       }
+
       const image = req.files?.coverImage as UploadedFile;
       let url = null;
       if (image) {
@@ -142,12 +141,12 @@ class BlogController {
         });
       }
 
-      const blog = await this.blogService.updateBlog(id, {
+      const news = await this.newsService.updateNews(id, {
         ...req.body,
         SEO: parsedSEO,
-        coverImage: url ? url : blogExist.coverImage,
+        coverImage: url ? url : newsExist.coverImage,
       });
-      res.status(200).json(blog);
+      res.status(200).json(news);
     } catch (error) {
       next(error);
     }
@@ -156,11 +155,11 @@ class BlogController {
   async getBySlug(req: Request, res: Response, next: NextFunction) {
     const { slug } = req.params;
     try {
-      const blog = await this.blogService.getBySlug(slug);
-      if (!blog) {
-        return next(createHttpError(404, "Blog not found"));
+      const news = await this.newsService.getBySlug(slug);
+      if (!news) {
+        return next(createHttpError(404, "News not found"));
       }
-      res.status(200).json(blog);
+      res.status(200).json(news);
     } catch (error) {
       next(error);
     }
@@ -168,13 +167,13 @@ class BlogController {
 
   async getAdminDashboard(req: Request, res: Response, next: NextFunction) {
     try {
-      const { blogs, totalBlogs, totalCategories } = await this.blogService.getRecent(
+      const { news, totalNews, totalCategories } = await this.newsService.getRecent(
         5,
         true
       );
       res.status(200).json({
-        blogs,
-        totalBlogs,
+        news,
+        totalNews,
         totalCategories,
       });
     } catch (error) {
@@ -183,4 +182,4 @@ class BlogController {
   }
 }
 
-export default BlogController;
+export default NewsController;

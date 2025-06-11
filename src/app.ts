@@ -5,8 +5,7 @@ import cors from "cors";
 import Config from "./config";
 import authRouter from "./routes/authRoutes";
 import categoryRouter from "./routes/categoryRoutes";
-import blogRouter from "./routes/blogRoutes";
-import webinarsRouter from "./routes/webinarsRoutes";
+import newsRouter from "./routes/newsRoutes";
 
 const app = express();
 
@@ -27,8 +26,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 app.use("/api/auth", authRouter);
 app.use("/api/categories", categoryRouter);
-app.use("/api/blogs", blogRouter);
-app.use("/api/webinars", webinarsRouter);
+app.use("/api/news", newsRouter);
 
 app.use(globalErrorHandler);
 

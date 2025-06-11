@@ -5,7 +5,7 @@ export interface ISEO {
   metaDescription: string;
 }
 
-export interface IBlog extends Document {
+export interface INews extends Document {
   _id: string;
   title: string;
   content: string;
@@ -16,7 +16,7 @@ export interface IBlog extends Document {
   SEO: ISEO;
 }
 
-const blogSchema = new mongoose.Schema<IBlog>(
+const newsSchema = new mongoose.Schema<INews>(
   {
     title: { type: String, required: true },
     content: { type: String, required: true },
@@ -38,6 +38,6 @@ const blogSchema = new mongoose.Schema<IBlog>(
   }
 );
 
-const Blog = mongoose.model("Blog", blogSchema);
+const News = mongoose.model("News", newsSchema);
 
-export default Blog;
+export default News;
