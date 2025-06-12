@@ -1,0 +1,202 @@
+import { NextFunction, Request, Response } from "express";
+import { FileStorage } from "../types/storage";
+import { UploadedFile } from "express-fileupload";
+import { v4 as uuidv4 } from "uuid";
+import createHttpError from "http-errors";
+import ScreeningService from "../services/ScreeningService";
+
+class ScreeningController {
+  constructor(private storage: FileStorage, private screeningService: ScreeningService) {}
+
+  async create(req: Request, res: Response, next: NextFunction) {
+    try {
+      let imageURL = null;
+      const image = req.files?.image as UploadedFile;
+      if (image) {
+        const imageName = uuidv4();
+        imageURL = await this.storage.upload({
+          fileName: imageName,
+          fileData: image.data.buffer,
+          contentType: image.mimetype,
+        });
+      }
+
+      const screening = await this.screeningService.createScreening({
+        ...req.body,
+        imageURL: imageURL,
+        questions: req.body.questions ? JSON.parse(req.body.questions) : [],
+      });
+
+      res.status(201).json(screening);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getAll(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { status, search, limit = 10, page = 1 } = req.query;
+
+      const skip = (Number(page) - 1) * Number(limit);
+
+      const { screenings, total } = await this.screeningService.getAllScreenings({
+        status: status as "active" | "inactive" | "draft",
+        search: search as string,
+        limit: Number(limit),
+        skip,
+      });
+
+      res.status(200).json({
+        screenings,
+        currentPage: Number(page),
+        totalPages: Math.ceil(total / Number(limit)),
+        limit: Number(limit),
+        total,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getOne(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const screening = await this.screeningService.getScreeningById(id);
+      if (!screening) {
+        return next(createHttpError(404, "Screening not found"));
+      }
+      res.status(200).json(screening);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getBySlug(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { slug } = req.params;
+      const screening = await this.screeningService.getScreeningBySlug(slug);
+      if (!screening) {
+        return next(createHttpError(404, "Screening not found"));
+      }
+      res.status(200).json(screening);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async update(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    try {
+      const screeningExist = await this.screeningService.getScreeningById(id);
+      if (!screeningExist) {
+        return next(createHttpError(404, "Screening not found"));
+      }
+
+      let imageURL = screeningExist.imageURL;
+      const image = req.files?.image as UploadedFile;
+      if (image) {
+        const imageName = uuidv4();
+        imageURL = await this.storage.upload({
+          fileName: imageName,
+          fileData: image.data.buffer,
+          contentType: image.mimetype,
+        });
+      }
+
+      const screening = await this.screeningService.updateScreening(id, {
+        ...req.body,
+        imageURL,
+        questions: req.body.questions
+          ? JSON.parse(req.body.questions)
+          : screeningExist.questions,
+      });
+
+      res.status(200).json(screening);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async delete(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    try {
+      const screening = await this.screeningService.deleteScreening(id);
+      if (!screening) {
+        return next(createHttpError(404, "Screening not found"));
+      }
+      res.status(200).json(screening);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async addQuestion(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    try {
+      const screening = await this.screeningService.addQuestionToScreening(id, req.body);
+      res.status(200).json(screening);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateQuestion(req: Request, res: Response, next: NextFunction) {
+    const { id, questionId } = req.params;
+    try {
+      const screening = await this.screeningService.updateQuestionInScreening(
+        id,
+        questionId,
+        req.body
+      );
+      res.status(200).json(screening);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async removeQuestion(req: Request, res: Response, next: NextFunction) {
+    const { id, questionId } = req.params;
+    try {
+      const screening = await this.screeningService.removeQuestionFromScreening(
+        id,
+        questionId
+      );
+      res.status(200).json(screening);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async changeStatus(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    const { status } = req.body;
+    try {
+      const screening = await this.screeningService.changeScreeningStatus(id, status);
+      res.status(200).json(screening);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async validateScreening(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+    try {
+      const validation = await this.screeningService.validateScreening(id);
+      res.status(200).json(validation);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getRecentScreenings(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { limit = 5 } = req.query;
+      const screenings = await this.screeningService.getRecentScreenings(Number(limit));
+      res.status(200).json(screenings);
+    } catch (error) {
+      next(error);
+    }
+  }
+}
+
+export default ScreeningController;
