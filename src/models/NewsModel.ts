@@ -10,7 +10,10 @@ export interface INews extends Document {
   title: string;
   content: string;
   coverImage: string;
+  cardImage?: string;
   category: Types.ObjectId;
+  shortDescription?: string;
+  isFeatured: boolean;
   createdAt: Date;
   updatedAt: Date;
   SEO: ISEO;
@@ -19,8 +22,11 @@ export interface INews extends Document {
 const newsSchema = new mongoose.Schema<INews>(
   {
     title: { type: String, required: true },
+    shortDescription: { type: String },
     content: { type: String, required: true },
+    cardImage: { type: String, required: false },
     coverImage: { type: String, required: false },
+    isFeatured: { type: Boolean, default: false },
     category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",

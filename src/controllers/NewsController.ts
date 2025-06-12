@@ -38,6 +38,7 @@ class NewsController {
 
     try {
       const parsedSEO = JSON.parse(SEO);
+      // Upload cover image
       const image = req.files?.coverImage as UploadedFile;
       if (!image) {
         return next(createHttpError(400, "No file uploaded"));
@@ -49,11 +50,23 @@ class NewsController {
         fileData: image.data.buffer,
         contentType: image.mimetype,
       });
+      // upload card image
+      const cardImage = req.files?.cardImage as UploadedFile;
+      let cardUrl = null;
+      if (cardImage) {
+        const imageName = uuidv4();
+        cardUrl = await this.storage.upload({
+          fileName: imageName,
+          fileData: cardImage.data.buffer,
+          contentType: cardImage.mimetype,
+        });
+      }
 
       const news = await this.newsService.createNews({
         ...req.body,
         coverImage: url,
         SEO: parsedSEO,
+        cardImage: cardUrl,
       });
       res.status(201).json(news);
     } catch (error) {
@@ -141,10 +154,22 @@ class NewsController {
         });
       }
 
+      const cardImage = req.files?.cardImage as UploadedFile;
+      let cardUrl = null;
+      if (cardImage) {
+        const imageName = uuidv4();
+        cardUrl = await this.storage.upload({
+          fileName: imageName,
+          fileData: cardImage.data.buffer,
+          contentType: cardImage.mimetype,
+        });
+      }
+
       const news = await this.newsService.updateNews(id, {
         ...req.body,
         SEO: parsedSEO,
         coverImage: url ? url : newsExist.coverImage,
+        cardImage: cardUrl ? cardUrl : newsExist.cardImage,
       });
       res.status(200).json(news);
     } catch (error) {
