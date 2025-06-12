@@ -14,7 +14,7 @@ class CategoryService {
   }
 
   async getAll() {
-    return Category.find({ status: "active" });
+    return Category.find();
   }
 
   async getBySlug(slug: string) {

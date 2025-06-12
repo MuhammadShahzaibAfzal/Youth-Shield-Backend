@@ -105,7 +105,7 @@ class NewsController {
         totalPages: Math.ceil(total / limitNumber),
         limit: limitNumber,
         total,
-        recent,
+        recent: recent?.[0],
       });
     } catch (error) {
       next(error);
