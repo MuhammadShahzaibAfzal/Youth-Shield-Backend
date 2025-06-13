@@ -26,8 +26,7 @@ screeningRouter.post(
 
 screeningRouter.get(
   "/",
-  authenticate,
-  canAccess(["admin", "user"]),
+
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     await screeningController.getAll(req, res, next);
   })
@@ -35,8 +34,7 @@ screeningRouter.get(
 
 screeningRouter.get(
   "/recents",
-  authenticate,
-  canAccess(["admin", "user"]),
+
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     await screeningController.getRecentScreenings(req, res, next);
   })
@@ -44,8 +42,7 @@ screeningRouter.get(
 
 screeningRouter.get(
   "/:id",
-  authenticate,
-  canAccess(["admin", "user"]),
+
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     await screeningController.getOne(req, res, next);
   })
@@ -53,8 +50,7 @@ screeningRouter.get(
 
 screeningRouter.get(
   "/slug/:slug",
-  authenticate,
-  canAccess(["admin", "user"]),
+
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     await screeningController.getBySlug(req, res, next);
   })
