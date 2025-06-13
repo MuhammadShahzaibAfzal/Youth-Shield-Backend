@@ -1,5 +1,4 @@
-import Screening, { IQuestion, IScreening } from "../models/ScreeningModel";
-import mongoose from "mongoose";
+import Screening, { IScreening } from "../models/ScreeningModel";
 
 class ScreeningService {
   async createScreening(data: Partial<IScreening>) {
@@ -61,65 +60,11 @@ class ScreeningService {
       .limit(limit);
   }
 
-  async addQuestionToScreening(screeningId: string, question: Partial<IQuestion>) {
-    return await Screening.findByIdAndUpdate(
-      screeningId,
-      { $push: { questions: question } },
-      { new: true, runValidators: true }
-    );
-  }
-
-  async updateQuestionInScreening(
-    screeningId: string,
-    questionId: string,
-    updateData: Partial<IQuestion>
-  ) {
-    return await Screening.findOneAndUpdate(
-      { _id: screeningId, "questions._id": questionId },
-      { $set: { "questions.$": updateData } },
-      { new: true, runValidators: true }
-    );
-  }
-
-  async removeQuestionFromScreening(screeningId: string, questionId: string) {
-    return await Screening.findByIdAndUpdate(
-      screeningId,
-      { $pull: { questions: { _id: questionId } } },
-      { new: true }
-    );
-  }
-
   async changeScreeningStatus(
     screeningId: string,
     status: "active" | "inactive" | "draft"
   ) {
     return await Screening.findByIdAndUpdate(screeningId, { status }, { new: true });
-  }
-
-  async validateScreening(screeningId: string) {
-    const screening = await Screening.findById(screeningId);
-    if (!screening) throw new Error("Screening not found");
-
-    const errors: string[] = [];
-
-    if (screening.questions.length === 0) {
-      errors.push("Screening must have at least one question");
-    }
-
-    screening.questions.forEach((question, index) => {
-      if (question.options.length < 2) {
-        errors.push(`Question ${index + 1} must have at least 2 options`);
-      }
-      if (question.type === "boolean" && question.options.length !== 2) {
-        errors.push(`Question ${index + 1} (boolean type) must have exactly 2 options`);
-      }
-    });
-
-    return {
-      isValid: errors.length === 0,
-      errors,
-      screening,
-    };
   }
 }
 

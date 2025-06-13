@@ -130,64 +130,6 @@ class ScreeningController {
     }
   }
 
-  async addQuestion(req: Request, res: Response, next: NextFunction) {
-    const { id } = req.params;
-    try {
-      const screening = await this.screeningService.addQuestionToScreening(id, req.body);
-      res.status(200).json(screening);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async updateQuestion(req: Request, res: Response, next: NextFunction) {
-    const { id, questionId } = req.params;
-    try {
-      const screening = await this.screeningService.updateQuestionInScreening(
-        id,
-        questionId,
-        req.body
-      );
-      res.status(200).json(screening);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async removeQuestion(req: Request, res: Response, next: NextFunction) {
-    const { id, questionId } = req.params;
-    try {
-      const screening = await this.screeningService.removeQuestionFromScreening(
-        id,
-        questionId
-      );
-      res.status(200).json(screening);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async changeStatus(req: Request, res: Response, next: NextFunction) {
-    const { id } = req.params;
-    const { status } = req.body;
-    try {
-      const screening = await this.screeningService.changeScreeningStatus(id, status);
-      res.status(200).json(screening);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async validateScreening(req: Request, res: Response, next: NextFunction) {
-    const { id } = req.params;
-    try {
-      const validation = await this.screeningService.validateScreening(id);
-      res.status(200).json(validation);
-    } catch (error) {
-      next(error);
-    }
-  }
-
   async getRecentScreenings(req: Request, res: Response, next: NextFunction) {
     try {
       const { limit = 5 } = req.query;

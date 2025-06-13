@@ -79,49 +79,4 @@ screeningRouter.delete(
   })
 );
 
-screeningRouter.post(
-  "/:id/questions",
-  authenticate,
-  canAccess(["admin"]),
-  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    await screeningController.addQuestion(req, res, next);
-  })
-);
-
-screeningRouter.put(
-  "/:id/questions/:questionId",
-  authenticate,
-  canAccess(["admin"]),
-  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    await screeningController.updateQuestion(req, res, next);
-  })
-);
-
-screeningRouter.delete(
-  "/:id/questions/:questionId",
-  authenticate,
-  canAccess(["admin"]),
-  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    await screeningController.removeQuestion(req, res, next);
-  })
-);
-
-screeningRouter.put(
-  "/:id/status",
-  authenticate,
-  canAccess(["admin"]),
-  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    await screeningController.changeStatus(req, res, next);
-  })
-);
-
-screeningRouter.put(
-  "/:id/validate",
-  authenticate,
-  canAccess(["admin"]),
-  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    await screeningController.validateScreening(req, res, next);
-  })
-);
-
 export default screeningRouter;

@@ -1,13 +1,13 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface IOption {
-  _id: Types.ObjectId;
+  _id: string;
   text: string;
   score: number;
 }
 
 export interface IQuestion {
-  _id: Types.ObjectId;
+  _id: string;
   text: string;
   type: "multiple" | "boolean";
   options: IOption[];
@@ -24,52 +24,6 @@ export interface IScreening extends Document {
   createdAt: Date;
   updatedAt: Date;
 }
-
-const OptionSchema: Schema = new Schema(
-  {
-    text: {
-      type: String,
-      required: [true, "Option text is required"],
-      trim: true,
-      maxlength: [500, "Option text cannot exceed 500 characters"],
-    },
-    score: {
-      type: Number,
-      required: [true, "Score is required"],
-      min: [0, "Score cannot be negative"],
-    },
-  },
-  { _id: true }
-);
-
-const QuestionSchema: Schema = new Schema(
-  {
-    text: {
-      type: String,
-      required: [true, "Question text is required"],
-      trim: true,
-      maxlength: [1000, "Question text cannot exceed 1000 characters"],
-    },
-    type: {
-      type: String,
-      enum: {
-        values: ["multiple", "boolean"],
-        message: "Question type must be either 'multiple' or 'boolean'",
-      },
-      required: true,
-      default: "multiple",
-    },
-    options: {
-      type: [OptionSchema],
-      required: true,
-    },
-    order: {
-      type: Number,
-      required: true,
-    },
-  },
-  { _id: true }
-);
 
 const ScreeningSchema: Schema = new Schema(
   {
@@ -91,7 +45,25 @@ const ScreeningSchema: Schema = new Schema(
       maxlength: [2000, "Description cannot exceed 2000 characters"],
     },
     questions: {
-      type: [QuestionSchema],
+      type: [
+        {
+          _id: { type: String, required: true },
+          text: { type: String, required: true },
+          type: { type: String, enum: ["multiple", "boolean"], required: true },
+          options: {
+            type: [
+              {
+                _id: { type: String, required: true },
+                text: { type: String, required: true },
+                score: { type: Number, required: true },
+              },
+            ],
+            required: true,
+          },
+          order: { type: Number, required: true },
+        },
+      ],
+      required: true,
     },
     status: {
       type: String,
