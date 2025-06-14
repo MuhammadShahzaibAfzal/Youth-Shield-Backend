@@ -1,5 +1,6 @@
 import News, { INews } from "../models/NewsModel";
 import Category from "../models/CategoryModel";
+import Screening from "../models/ScreeningModel";
 
 class NewsService {
   async createNews(data: Partial<INews>) {
@@ -63,7 +64,8 @@ class NewsService {
     if (!isAdmin) return { news, totalNews: 0, totalCategories: 0 };
     const totalNews = await News.countDocuments();
     const totalCategories = await Category.countDocuments({ status: "active" });
-    return { news, totalNews, totalCategories };
+    const totalScreenings = await Screening.countDocuments({ status: "active" });
+    return { news, totalNews, totalCategories, totalScreenings };
   }
 }
 
