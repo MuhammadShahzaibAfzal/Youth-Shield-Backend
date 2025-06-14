@@ -109,6 +109,9 @@ class ScreeningController {
         questions: req.body.questions
           ? JSON.parse(req.body.questions)
           : screeningExist.questions,
+        interpretations: req.body.interpretations
+          ? JSON.parse(req.body.interpretations)
+          : screeningExist.interpretations,
       });
 
       res.status(200).json(screening);

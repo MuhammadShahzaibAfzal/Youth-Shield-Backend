@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Types } from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface IOption {
   _id: string;
@@ -9,9 +9,17 @@ export interface IOption {
 export interface IQuestion {
   _id: string;
   text: string;
-  type: "multiple" | "boolean";
+  type: "multiple" | "input" | "textarea" | "dropdown" | "radio";
   options: IOption[];
   order: number;
+}
+
+export interface ILevel {
+  _id: string;
+  name: string;
+  proposedSolution: string;
+  from: number;
+  to: number;
 }
 
 export interface IScreening extends Document {
@@ -21,6 +29,7 @@ export interface IScreening extends Document {
   status: "active" | "inactive" | "draft";
   imageURL?: string;
   questions: IQuestion[];
+  interpretations: ILevel[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -49,18 +58,34 @@ const ScreeningSchema: Schema = new Schema(
         {
           _id: { type: String, required: true },
           text: { type: String, required: true },
-          type: { type: String, enum: ["multiple", "boolean"], required: true },
+          type: {
+            type: String,
+            enum: ["multiple", "text", "number", "date", "textarea", "dropdown", "radio"],
+            required: true,
+          },
           options: {
             type: [
               {
                 _id: { type: String, required: true },
-                text: { type: String, required: true },
-                score: { type: Number, required: true },
+                text: { type: String, required: false },
+                score: { type: Number, required: true, default: 0 },
               },
             ],
-            required: true,
+            required: false,
           },
-          order: { type: Number, required: true },
+          order: { type: Number, required: false },
+        },
+      ],
+      required: true,
+    },
+    interpretations: {
+      type: [
+        {
+          _id: { type: String, required: true },
+          name: { type: String, required: true },
+          proposedSolution: { type: String, required: true },
+          from: { type: Number, required: true },
+          to: { type: Number, required: true },
         },
       ],
       required: true,
