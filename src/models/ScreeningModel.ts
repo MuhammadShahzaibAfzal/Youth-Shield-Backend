@@ -6,11 +6,24 @@ export interface IOption {
   score: number;
 }
 
+export interface IWeightOption {
+  _id?: string;
+  weight: string;
+  score: number;
+}
+
+export interface IHeightOption {
+  _id?: string;
+  height: string;
+  weights: IWeightOption[];
+}
+
 export interface IQuestion {
   _id: string;
   text: string;
-  type: "multiple" | "input" | "textarea" | "dropdown" | "radio";
+  type: "multiple" | "input" | "textarea" | "dropdown" | "radio" | "height-weight";
   options: IOption[];
+  heightOptions?: IHeightOption[];
   order: number;
 }
 
@@ -60,7 +73,16 @@ const ScreeningSchema: Schema = new Schema(
           text: { type: String, required: true },
           type: {
             type: String,
-            enum: ["multiple", "text", "number", "date", "textarea", "dropdown", "radio"],
+            enum: [
+              "multiple",
+              "text",
+              "number",
+              "date",
+              "textarea",
+              "dropdown",
+              "radio",
+              "height-weight",
+            ],
             required: true,
           },
           options: {
@@ -69,6 +91,25 @@ const ScreeningSchema: Schema = new Schema(
                 _id: { type: String, required: true },
                 text: { type: String, required: false },
                 score: { type: Number, required: true, default: 0 },
+              },
+            ],
+            required: false,
+          },
+          heightOptions: {
+            type: [
+              {
+                _id: { type: String, required: false },
+                height: { type: String, required: false },
+                weights: {
+                  type: [
+                    {
+                      _id: { type: String, required: false },
+                      weight: { type: String, required: false },
+                      score: { type: Number, required: true, default: 0 },
+                    },
+                  ],
+                  required: false,
+                },
               },
             ],
             required: false,
