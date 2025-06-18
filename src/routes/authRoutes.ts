@@ -6,6 +6,7 @@ import {
   forgotPasswordValidator,
   loginValidator,
   passwordResetValidator,
+  registerValidator,
   updateProfileValidator,
 } from "../validators/authValidators";
 import asyncHandler from "../utils/asyncHandler";
@@ -39,6 +40,14 @@ authRouter.post(
   loginValidator,
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     await authController.login(req, res, next);
+  })
+);
+
+authRouter.post(
+  "/register",
+  registerValidator,
+  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    await authController.register(req, res, next);
   })
 );
 

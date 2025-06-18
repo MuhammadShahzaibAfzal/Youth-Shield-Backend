@@ -99,6 +99,50 @@ class AuthController {
     }
   }
 
+  async register(req: Request, res: Response, next: NextFunction) {
+    const result = validationResult(req);
+    if (!result.isEmpty()) {
+      return next(createHttpError(400, result.array()[0].msg as string));
+    }
+    const { email, firstName, lastName, password, role, gender, highSchool, dob } =
+      req.body;
+    try {
+      // Check email exist or not.
+      const isEmailExist = await this.userService.findUserByEmail(email);
+      if (isEmailExist) {
+        return next(createHttpError(400, "Email already exist."));
+      }
+
+      const user = await this.userService.createUser({
+        email,
+        firstName,
+        lastName,
+        password,
+        role,
+        gender,
+        highSchool,
+        dob,
+      });
+      logger.info("User has been registered", { id: user._id });
+      // generate tokens
+      const payload: JwtPayload = { sub: String(user.id), role: user.role };
+      const accessToken = this.tokenService.generateAccessToken(payload);
+      const newRefreshToken = await this.tokenService.persistRefreshToken(
+        user._id.toString()
+      );
+      const refreshToken = this.tokenService.generateRefreshToken({
+        ...payload,
+        id: String(newRefreshToken._id),
+      });
+
+      this.setAuthCookies(res, accessToken, refreshToken);
+
+      res.json({ id: user._id, accessToken, refreshToken });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async self(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const id = req.auth.sub;

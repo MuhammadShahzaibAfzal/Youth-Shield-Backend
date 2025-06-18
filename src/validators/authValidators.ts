@@ -24,6 +24,56 @@ export const loginValidator = checkSchema({
   },
 });
 
+export const registerValidator = checkSchema({
+  email: {
+    trim: true,
+    errorMessage: "Email is required!",
+    notEmpty: true,
+    isEmail: {
+      errorMessage: "Email should be a valid email",
+    },
+  },
+  firstName: {
+    trim: true,
+    errorMessage: "First Name is required!",
+    notEmpty: true,
+  },
+  lastName: {
+    trim: true,
+    errorMessage: "Last Name is required!",
+    notEmpty: true,
+  },
+  password: {
+    trim: true,
+    errorMessage: "Password is required!",
+    notEmpty: true,
+  },
+  role: {
+    errorMessage: "Role is required!",
+    notEmpty: true,
+    isIn: {
+      options: [["user", "admin"]],
+      errorMessage: "Invalid role",
+    },
+  },
+  gender: {
+    errorMessage: "Gender is required!",
+    notEmpty: true,
+    isIn: {
+      options: [["male", "female"]],
+      errorMessage: "Invalid gender",
+    },
+  },
+  highSchool: {
+    errorMessage: "High school is required!",
+    notEmpty: true,
+  },
+  dob: {
+    errorMessage: "Date of birth is required!",
+    notEmpty: true,
+  },
+});
+
 export const forgotPasswordValidator = checkSchema({
   email: {
     trim: true,
