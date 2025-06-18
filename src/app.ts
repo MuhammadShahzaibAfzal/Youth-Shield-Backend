@@ -7,6 +7,7 @@ import authRouter from "./routes/authRoutes";
 import categoryRouter from "./routes/categoryRoutes";
 import newsRouter from "./routes/newsRoutes";
 import screeningRouter from "./routes/screeningRoutes";
+import contestRouter from "./routes/contestRoutes";
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/categories", categoryRouter);
 app.use("/api/news", newsRouter);
 app.use("/api/screenings", screeningRouter);
+app.use("/api/contests", contestRouter);
 
 app.use(globalErrorHandler);
 

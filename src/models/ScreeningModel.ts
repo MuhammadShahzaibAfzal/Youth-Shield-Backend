@@ -137,7 +137,7 @@ const ScreeningSchema: Schema = new Schema(
         values: ["active", "inactive", "draft"],
         message: "Status must be either 'active', 'inactive', or 'draft'",
       },
-      default: "draft",
+      default: "active",
     },
     imageURL: {
       type: String,
