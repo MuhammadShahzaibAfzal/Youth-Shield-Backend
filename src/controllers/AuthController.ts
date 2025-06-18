@@ -56,7 +56,7 @@ class AuthController {
           });
           logger.info("Admin user has been created", { id: user._id });
         } else {
-          return next(createHttpError(400, "Email does not match."));
+          return next(createHttpError(400, "Email or password does not match."));
         }
       }
 
