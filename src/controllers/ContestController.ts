@@ -4,9 +4,15 @@ import { UploadedFile } from "express-fileupload";
 import { v4 as uuidv4 } from "uuid";
 import createHttpError from "http-errors";
 import ContestService from "../services/ContestService";
+import { AuthRequest } from "../types";
+import ContestSubmissionService from "../services/ContestSubmissionService";
 
 class ContestController {
-  constructor(private storage: FileStorage, private contestService: ContestService) {}
+  constructor(
+    private storage: FileStorage,
+    private contestService: ContestService,
+    private contestSubmissionService: ContestSubmissionService
+  ) {}
 
   async create(req: Request, res: Response, next: NextFunction) {
     try {
@@ -71,14 +77,24 @@ class ContestController {
     }
   }
 
-  async getBySlug(req: Request, res: Response, next: NextFunction) {
+  async getBySlug(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      const userID = req?.auth?.sub || req?.auth?.id;
       const { slug } = req.params;
+
       const contest = await this.contestService.getContestBySlug(slug);
       if (!contest) {
         return next(createHttpError(404, "Contest not found"));
       }
-      res.status(200).json(contest);
+      const isAlreadySubmitted = await this.contestSubmissionService.hasUserSubmitted(
+        userID as string,
+        contest._id as string
+      );
+
+      res.status(200).json({
+        ...contest.toObject(),
+        isAlreadySubmitted,
+      });
     } catch (error) {
       next(error);
     }

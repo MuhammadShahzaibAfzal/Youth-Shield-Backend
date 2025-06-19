@@ -6,11 +6,18 @@ import fileUpload from "express-fileupload";
 import asyncHandler from "../utils/asyncHandler";
 import ContestService from "../services/ContestService";
 import ContestController from "../controllers/ContestController";
+import ContestSubmissionService from "../services/ContestSubmissionService";
+import { AuthRequest } from "../types";
 
 const contestRouter = Router();
 const storage = new CloudinaryStorageService();
 const contestService = new ContestService();
-const contestController = new ContestController(storage, contestService);
+const contestSubmissionService = new ContestSubmissionService();
+const contestController = new ContestController(
+  storage,
+  contestService,
+  contestSubmissionService
+);
 
 // Create a new contest
 contestRouter.post(
@@ -54,8 +61,9 @@ contestRouter.get(
 
 contestRouter.get(
   "/slug/:slug",
+  authenticate,
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    await contestController.getBySlug(req, res, next);
+    await contestController.getBySlug(req as AuthRequest, res, next);
   })
 );
 

@@ -25,6 +25,8 @@ export interface IContest extends Document {
   fromTime: string;
   toDate: Date;
   toTime: string;
+  totalSubmissions: number;
+  averageScore: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -96,6 +98,14 @@ const ContestSchema: Schema = new Schema<IContest>(
     },
     toTime: {
       type: String,
+    },
+    totalSubmissions: {
+      type: Number,
+      default: 0,
+    },
+    averageScore: {
+      type: Number,
+      default: 0,
     },
   },
   {

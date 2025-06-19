@@ -182,7 +182,7 @@ class AuthController {
       this.setAuthCookies(res, accessToken, refreshToken);
 
       logger.info("Token has been refreshed.", { id: user.id });
-      res.json({ id: user.id, accessToken, refreshToken });
+      res.json({ id: user.id, accessToken, refreshToken, user });
     } catch (error) {
       next(error);
     }

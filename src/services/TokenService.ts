@@ -9,7 +9,7 @@ export class TokenService {
   generateAccessToken(payload: JwtPayload) {
     const accessToken = sign(payload, Config.ACCESS_TOEKN_SECRET_KEY!, {
       algorithm: "HS256",
-      expiresIn: "1h",
+      expiresIn: "2m",
       issuer: "YouthShield",
     });
     return accessToken;
@@ -18,7 +18,7 @@ export class TokenService {
   generateRefreshToken(payload: JwtPayload) {
     const refreshToken = sign(payload, Config.REFRESH_TOKEN_SECRET_KEY!, {
       algorithm: "HS256",
-      expiresIn: "1y",
+      expiresIn: "10m",
       issuer: "YouthShield",
       jwtid: String(payload.id),
     });

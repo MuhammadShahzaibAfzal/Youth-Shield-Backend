@@ -9,12 +9,14 @@ export interface IUser extends Document {
   dob?: Date;
   gender?: "male" | "female";
   highSchool?: string;
+  country?: string;
   password: string;
   role: "user" | "admin";
   status: "active" | "deleted" | "inactive";
   forgetPasswordToken?: string;
   forgetPasswordTokenExpiry?: string;
   imageURL?: string;
+  age?: number; // Calculated field, not stored in DB
   isPasswordCorrect: (rawPassword: string) => Promise<boolean>;
 }
 
@@ -23,6 +25,7 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
   lastName: { type: String, required: true },
   email: { type: String, required: [true, "Email is required"], unique: true },
   dob: Date,
+  country: String,
   gender: { type: String, enum: ["male", "female"] },
   highSchool: String,
   password: { type: String, required: true },
@@ -70,6 +73,18 @@ userSchema.methods.isPasswordCorrect = async function (rawPassword: string) {
   if (!this.password) return false;
   return await bcrypt.compare(rawPassword, this.password);
 };
+
+userSchema.virtual("age").get(function (this: IUser) {
+  if (!this.dob) return null;
+  const today = new Date();
+  const birthDate = new Date(this.dob);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+});
 
 const User: Model<IUser> = mongoose.model<IUser>("User", userSchema);
 

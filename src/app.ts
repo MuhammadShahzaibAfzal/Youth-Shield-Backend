@@ -8,6 +8,7 @@ import categoryRouter from "./routes/categoryRoutes";
 import newsRouter from "./routes/newsRoutes";
 import screeningRouter from "./routes/screeningRoutes";
 import contestRouter from "./routes/contestRoutes";
+import contestSubmissionRouter from "./routes/contestSubmissionRoutes";
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use("/api/categories", categoryRouter);
 app.use("/api/news", newsRouter);
 app.use("/api/screenings", screeningRouter);
 app.use("/api/contests", contestRouter);
+app.use("/api/contest-submissions", contestSubmissionRouter);
 
 app.use(globalErrorHandler);
 
