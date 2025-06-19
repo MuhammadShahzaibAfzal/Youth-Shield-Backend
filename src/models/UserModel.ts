@@ -18,6 +18,7 @@ export interface IUser extends Document {
   imageURL?: string;
   age?: number; // Calculated field, not stored in DB
   isPasswordCorrect: (rawPassword: string) => Promise<boolean>;
+  totalScore?: number; // For leaderboard purposes
 }
 
 const userSchema: Schema<IUser> = new mongoose.Schema({

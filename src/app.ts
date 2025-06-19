@@ -9,6 +9,7 @@ import newsRouter from "./routes/newsRoutes";
 import screeningRouter from "./routes/screeningRoutes";
 import contestRouter from "./routes/contestRoutes";
 import contestSubmissionRouter from "./routes/contestSubmissionRoutes";
+import leaderBoardRouter from "./routes/leaderBoardRoutes";
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use("/api/news", newsRouter);
 app.use("/api/screenings", screeningRouter);
 app.use("/api/contests", contestRouter);
 app.use("/api/contest-submissions", contestSubmissionRouter);
+app.use("/api/leaderboard", leaderBoardRouter);
 
 app.use(globalErrorHandler);
 

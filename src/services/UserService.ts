@@ -33,6 +33,12 @@ class UserService {
   async getAll() {
     return await User.find({}).select("-password -__v");
   }
+
+  async getAllUsers() {
+    return await User.find({
+      role: "user",
+    }).select("-password -__v");
+  }
 }
 
 export default UserService;

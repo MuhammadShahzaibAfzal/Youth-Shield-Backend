@@ -81,6 +81,49 @@ class ContestSubmissionService {
     return { submissions, total };
   }
 
+  async getAll() {
+    return await ContestSubmission.find({})
+      .sort({ submittedAt: -1 })
+      .populate("user", "firstName lastName imageURL")
+      .populate("contest", "name slug");
+  }
+
+  async aggregateTotalScores() {
+    return await ContestSubmission.aggregate([
+      {
+        $group: {
+          _id: "$user",
+          totalScore: { $sum: "$totalScore" },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      {
+        $unwind: "$user",
+      },
+      {
+        $project: {
+          totalScore: 1,
+          "user.firstName": 1,
+          "user.lastName": 1,
+          "user.imageURL": 1,
+        },
+      },
+      {
+        $sort: { totalScore: -1 },
+      },
+      {
+        $limit: 10,
+      },
+    ]);
+  }
+
   /**
    * Get a user's submission for a specific contest
    */
