@@ -100,6 +100,10 @@ class AuthController {
           email: user.email,
           role: user.role,
           imageURL: user.imageURL,
+          country: user.country,
+          dob: user.dob,
+          gender: user.gender,
+          highSchool: user.highSchool,
         },
       });
     } catch (error) {
@@ -166,6 +170,11 @@ class AuthController {
           email: user.email,
           role: user.role,
           imageURL: user.imageURL,
+          country: user.country,
+          dob: user.dob,
+          gender: user.gender,
+          highSchool: user.highSchool,
+          totalScore: user.totalScore,
         },
       });
     } catch (error) {
@@ -317,7 +326,7 @@ class AuthController {
     if (!result.isEmpty()) {
       return res.status(400).json({ errors: result.array() });
     }
-    const { firstName, lastName, email, password } = req.body;
+    const { firstName, lastName, email, password, dob, country, gender } = req.body;
     const userId = req.auth.sub;
     try {
       const user = await this.userService.findUserById(userId);
@@ -348,10 +357,31 @@ class AuthController {
         imageURL: imageURL,
         email,
         ...(password && { password }),
+        dob,
+        country,
+        gender,
       };
-      await this.userService.update(userId, updateData);
+      const updatedUser = await this.userService.update(userId, updateData);
+      if (!updatedUser) {
+        return next(createHttpError(400, "User with the token could not be found"));
+      }
       logger.info("User profile has been updated", { id: userId });
-      return res.status(200).json({ message: "Profile updated successfully." });
+      return res.status(200).json({
+        message: "Profile updated successfully.",
+        user: {
+          firstName: updatedUser.firstName,
+          lastName: updatedUser.lastName,
+          email: updatedUser.email,
+          imageURL: updatedUser.imageURL,
+          dob: updatedUser.dob,
+          country: updatedUser.country,
+          gender: updatedUser.gender,
+          age: updatedUser.age,
+          highSchool: updatedUser.highSchool,
+          totalScore: updatedUser.totalScore,
+          _id: updatedUser._id,
+        },
+      });
     } catch (error) {
       next(error);
     }

@@ -158,4 +158,35 @@ export const updateProfileValidator = checkSchema({
       errorMessage: "Last Name is required!",
     },
   },
+  gender: {
+    errorMessage: "Gender is required!",
+    notEmpty: true,
+    isIn: {
+      options: [["male", "female"]],
+      errorMessage: "Invalid gender",
+    },
+  },
+  highSchool: {
+    errorMessage: "High school is required!",
+    notEmpty: true,
+  },
+  dob: {
+    errorMessage: "Date of birth is required!",
+    notEmpty: true,
+  },
+  country: {
+    errorMessage: "Country is required!",
+    notEmpty: true,
+  },
+  image: {
+    optional: true,
+    custom: {
+      options: (value, { req }) => {
+        if (req.file && req.file.size > 500 * 1024) {
+          throw new Error("File size exceeded the limit of 500kb");
+        }
+        return true;
+      },
+    },
+  },
 });
