@@ -72,6 +72,10 @@ export const registerValidator = checkSchema({
     errorMessage: "Date of birth is required!",
     notEmpty: true,
   },
+  country: {
+    errorMessage: "Country is required!",
+    notEmpty: true,
+  },
 });
 
 export const forgotPasswordValidator = checkSchema({

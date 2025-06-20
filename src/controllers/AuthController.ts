@@ -93,6 +93,14 @@ class AuthController {
         id: user._id,
         accessToken,
         refreshToken,
+        user: {
+          _id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          role: user.role,
+          imageURL: user.imageURL,
+        },
       });
     } catch (error) {
       next(error);
@@ -104,8 +112,17 @@ class AuthController {
     if (!result.isEmpty()) {
       return next(createHttpError(400, result.array()[0].msg as string));
     }
-    const { email, firstName, lastName, password, role, gender, highSchool, dob } =
-      req.body;
+    const {
+      email,
+      firstName,
+      lastName,
+      password,
+      role,
+      gender,
+      highSchool,
+      dob,
+      country,
+    } = req.body;
     try {
       // Check email exist or not.
       const isEmailExist = await this.userService.findUserByEmail(email);
@@ -122,6 +139,7 @@ class AuthController {
         gender,
         highSchool,
         dob,
+        country,
       });
       logger.info("User has been registered", { id: user._id });
       // generate tokens
@@ -137,7 +155,19 @@ class AuthController {
 
       this.setAuthCookies(res, accessToken, refreshToken);
 
-      res.json({ id: user._id, accessToken, refreshToken });
+      res.json({
+        id: user._id,
+        accessToken,
+        refreshToken,
+        user: {
+          _id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          role: user.role,
+          imageURL: user.imageURL,
+        },
+      });
     } catch (error) {
       next(error);
     }
