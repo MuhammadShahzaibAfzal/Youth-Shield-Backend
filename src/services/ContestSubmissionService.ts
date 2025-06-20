@@ -113,6 +113,7 @@ class ContestSubmissionService {
           "user.firstName": 1,
           "user.lastName": 1,
           "user.imageURL": 1,
+          "user.country": 1,
         },
       },
       {
