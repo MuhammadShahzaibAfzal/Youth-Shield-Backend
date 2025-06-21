@@ -18,7 +18,7 @@ const contestSubmissionController = new ContestSubmissionController(
 contestSubmissionRouter.post(
   "/",
   authenticate,
-  canAccess(["user"]),
+  canAccess(["user", "ambassador"]),
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     await contestSubmissionController.createSubmission(req as AuthRequest, res, next);
   })
@@ -28,7 +28,7 @@ contestSubmissionRouter.post(
 contestSubmissionRouter.get(
   "/:id",
   authenticate,
-  canAccess(["user", "admin"]),
+  canAccess(["user", "admin", "ambassador"]),
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     await contestSubmissionController.getSubmission(req, res, next);
   })
@@ -38,7 +38,7 @@ contestSubmissionRouter.get(
 contestSubmissionRouter.get(
   "/",
   authenticate,
-  canAccess(["user", "admin"]),
+  canAccess(["user", "admin", "ambassador"]),
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     await contestSubmissionController.getAllSubmissions(req, res, next);
   })
@@ -48,7 +48,7 @@ contestSubmissionRouter.get(
 contestSubmissionRouter.put(
   "/:id",
   authenticate,
-  canAccess(["user", "admin"]),
+  canAccess(["user", "admin", "ambassador"]),
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     await contestSubmissionController.updateSubmission(req, res, next);
   })
