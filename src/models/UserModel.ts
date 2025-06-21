@@ -11,7 +11,7 @@ export interface IUser extends Document {
   highSchool?: string;
   country?: string;
   password: string;
-  role: "user" | "admin";
+  role: "user" | "admin" | "ambassador";
   status: "active" | "deleted" | "inactive";
   forgetPasswordToken?: string;
   forgetPasswordTokenExpiry?: string;
@@ -32,7 +32,7 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
   password: { type: String, required: true },
   role: {
     type: String,
-    enum: ["user", "admin"],
+    enum: ["user", "admin", "ambassador"],
     default: "user",
   },
   status: { type: String, enum: ["active", "deleted", "inactive"], default: "active" },

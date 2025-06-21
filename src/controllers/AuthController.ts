@@ -71,9 +71,9 @@ class AuthController {
           return next(createHttpError(400, "You don't have permission to login."));
         }
       } else {
-        if (user.role !== req.body.role) {
-          return next(createHttpError(400, "You don't have permission to login."));
-        }
+        // if (user.role !== req.body.role) {
+        //   return next(createHttpError(400, "You don't have permission to login."));
+        // }
       }
 
       const payload: JwtPayload = { sub: String(user.id), role: user.role };
@@ -112,8 +112,10 @@ class AuthController {
   }
 
   async register(req: Request, res: Response, next: NextFunction) {
+    console.log(req.body);
     const result = validationResult(req);
     if (!result.isEmpty()) {
+      console.log(result.array());
       return next(createHttpError(400, result.array()[0].msg as string));
     }
     const {

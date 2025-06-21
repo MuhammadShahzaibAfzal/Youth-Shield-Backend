@@ -52,7 +52,7 @@ export const registerValidator = checkSchema({
     errorMessage: "Role is required!",
     notEmpty: true,
     isIn: {
-      options: [["user", "admin"]],
+      options: [["user", "ambassador"]],
       errorMessage: "Invalid role",
     },
   },
@@ -187,6 +187,14 @@ export const updateProfileValidator = checkSchema({
         }
         return true;
       },
+    },
+  },
+  role: {
+    errorMessage: "Role is required!",
+    notEmpty: true,
+    isIn: {
+      options: [["user", "ambassador"]],
+      errorMessage: "Invalid role",
     },
   },
 });
