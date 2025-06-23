@@ -104,6 +104,7 @@ class AuthController {
           dob: user.dob,
           gender: user.gender,
           highSchool: user.highSchool,
+          countryCode: user.countryCode,
         },
       });
     } catch (error) {
@@ -128,6 +129,7 @@ class AuthController {
       highSchool,
       dob,
       country,
+      countryCode,
     } = req.body;
     try {
       // Check email exist or not.
@@ -146,6 +148,7 @@ class AuthController {
         highSchool,
         dob,
         country,
+        countryCode,
       });
       logger.info("User has been registered", { id: user._id });
       // generate tokens
@@ -177,6 +180,7 @@ class AuthController {
           gender: user.gender,
           highSchool: user.highSchool,
           totalScore: user.totalScore,
+          countryCode: user.countryCode,
         },
       });
     } catch (error) {
@@ -328,7 +332,8 @@ class AuthController {
     if (!result.isEmpty()) {
       return res.status(400).json({ errors: result.array() });
     }
-    const { firstName, lastName, email, password, dob, country, gender } = req.body;
+    const { firstName, lastName, email, password, dob, country, gender, countryCode } =
+      req.body;
     const userId = req.auth.sub;
     try {
       const user = await this.userService.findUserById(userId);
@@ -362,6 +367,7 @@ class AuthController {
         dob,
         country,
         gender,
+        countryCode,
       };
       const updatedUser = await this.userService.update(userId, updateData);
       if (!updatedUser) {
@@ -377,11 +383,13 @@ class AuthController {
           imageURL: updatedUser.imageURL,
           dob: updatedUser.dob,
           country: updatedUser.country,
+          countryCode: updatedUser.countryCode,
           gender: updatedUser.gender,
           age: updatedUser.age,
           highSchool: updatedUser.highSchool,
           totalScore: updatedUser.totalScore,
           _id: updatedUser._id,
+          role: updatedUser.role,
         },
       });
     } catch (error) {

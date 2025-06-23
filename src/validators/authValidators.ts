@@ -76,6 +76,10 @@ export const registerValidator = checkSchema({
     errorMessage: "Country is required!",
     notEmpty: true,
   },
+  countryCode: {
+    errorMessage: "Country code is required!",
+    notEmpty: true,
+  },
 });
 
 export const forgotPasswordValidator = checkSchema({
@@ -178,6 +182,10 @@ export const updateProfileValidator = checkSchema({
     errorMessage: "Country is required!",
     notEmpty: true,
   },
+  countryCode: {
+    errorMessage: "Country code is required!",
+    notEmpty: true,
+  },
   image: {
     optional: true,
     custom: {
@@ -189,12 +197,12 @@ export const updateProfileValidator = checkSchema({
       },
     },
   },
-  role: {
-    errorMessage: "Role is required!",
-    notEmpty: true,
-    isIn: {
-      options: [["user", "ambassador"]],
-      errorMessage: "Invalid role",
-    },
-  },
+  // role: {
+  //   errorMessage: "Role is required!",
+  //   notEmpty: true,
+  //   isIn: {
+  //     options: [["user", "ambassador"]],
+  //     errorMessage: "Invalid role",
+  //   },
+  // },
 });

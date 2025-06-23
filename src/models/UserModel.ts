@@ -10,6 +10,7 @@ export interface IUser extends Document {
   gender?: "male" | "female";
   highSchool?: string;
   country?: string;
+  countryCode?: string;
   password: string;
   role: "user" | "admin" | "ambassador";
   status: "active" | "deleted" | "inactive";
@@ -27,6 +28,7 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
   email: { type: String, required: [true, "Email is required"], unique: true },
   dob: Date,
   country: String,
+  countryCode: String,
   gender: { type: String, enum: ["male", "female"] },
   highSchool: String,
   password: { type: String, required: true },

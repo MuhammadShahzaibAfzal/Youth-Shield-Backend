@@ -18,6 +18,7 @@ class LeaderBoardController {
           imageURL: entry.user.imageURL,
           totalScore: entry.totalScore,
           country: entry.user.country,
+          countryCode: entry.user.countryCode,
           rank: index + 1,
         })),
       });
