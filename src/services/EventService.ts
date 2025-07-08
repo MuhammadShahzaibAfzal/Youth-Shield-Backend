@@ -1,4 +1,5 @@
 import Event, { IEvent } from "../models/EventModel";
+import Registration from "../models/RegistrationModel";
 
 class EventService {
   async createEvent(data: Partial<IEvent>) {
@@ -58,8 +59,18 @@ class EventService {
     return { events, total };
   }
 
-  async getBySlug(slug: string) {
-    return await Event.findOne({ "SEO.slug": slug });
+  async getBySlug(slug: string, userID: string | null) {
+    const event = await Event.findOne({ "SEO.slug": slug });
+    let registration = null;
+    console.log("user id: ", userID);
+
+    if (event && userID) {
+      registration = await Registration.findOne({ event: event._id, user: userID })
+        .populate("event")
+        .populate("user", "firstName lastName imageURL email _id");
+    }
+
+    return { event, registration };
   }
 
   async getFeaturedEvents(limit: number) {

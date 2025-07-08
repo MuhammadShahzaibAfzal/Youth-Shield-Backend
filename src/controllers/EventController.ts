@@ -147,12 +147,16 @@ class EventController {
 
   async getBySlug(req: Request, res: Response, next: NextFunction) {
     const { slug } = req.params;
+    const { userID } = req.query;
     try {
-      const event = await this.eventService.getBySlug(slug);
-      if (!event) {
+      const result = await this.eventService.getBySlug(slug, userID as string);
+      if (!result.event) {
         return next(createHttpError(404, "Event not found"));
       }
-      res.status(200).json(event);
+      res.status(200).json({
+        event: result.event,
+        registration: result.registration,
+      });
     } catch (error) {
       next(error);
     }
