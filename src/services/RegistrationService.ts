@@ -20,7 +20,7 @@ class RegistrationService {
     const registrations = await Registration.find({ event: new Types.ObjectId(eventId) })
       .skip(skip)
       .limit(limit)
-      .populate("user", "firstName lastName imageURL email")
+      .populate("user", "-password -_v -forgetPasswordToken -forgetPasswordTokenExpiry ")
       .populate("event")
       .sort({ createdAt: -1 });
 
