@@ -10,6 +10,7 @@ import screeningRouter from "./routes/screeningRoutes";
 import contestRouter from "./routes/contestRoutes";
 import contestSubmissionRouter from "./routes/contestSubmissionRoutes";
 import leaderBoardRouter from "./routes/leaderBoardRoutes";
+import eventRouter from "./routes/eventRoutes";
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use("/api/screenings", screeningRouter);
 app.use("/api/contests", contestRouter);
 app.use("/api/contest-submissions", contestSubmissionRouter);
 app.use("/api/leaderboard", leaderBoardRouter);
+app.use("/api/events", eventRouter);
 
 app.use(globalErrorHandler);
 
