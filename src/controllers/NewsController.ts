@@ -192,13 +192,14 @@ class NewsController {
 
   async getAdminDashboard(req: Request, res: Response, next: NextFunction) {
     try {
-      const { news, totalNews, totalCategories, totalScreenings } =
+      const { news, totalNews, totalCategories, totalScreenings, upcommingEvents } =
         await this.newsService.getRecent(5, true);
       res.status(200).json({
         news,
         totalNews,
         totalCategories,
         totalScreenings,
+        upcommingEvents,
       });
     } catch (error) {
       next(error);

@@ -1,6 +1,7 @@
 import News, { INews } from "../models/NewsModel";
 import Category from "../models/CategoryModel";
 import Screening from "../models/ScreeningModel";
+import Event from "../models/EventModel";
 
 class NewsService {
   async createNews(data: Partial<INews>) {
@@ -63,9 +64,12 @@ class NewsService {
       .populate("category");
     if (!isAdmin) return { news, totalNews: 0, totalCategories: 0 };
     const totalNews = await News.countDocuments();
+    const upcommingEvents = await Event.find({ eventDate: { $gte: new Date() } })
+      .limit(5)
+      .sort({ eventDate: 1 });
     const totalCategories = await Category.countDocuments({ status: "active" });
     const totalScreenings = await Screening.countDocuments({ status: "active" });
-    return { news, totalNews, totalCategories, totalScreenings };
+    return { news, totalNews, totalCategories, totalScreenings, upcommingEvents };
   }
 }
 
