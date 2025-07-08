@@ -39,6 +39,10 @@ export interface IScreening extends Document {
   name: string;
   slug: string;
   description?: string;
+  overview?: string;
+  purpose?: string;
+  duration?: string;
+  benefits?: string[];
   status: "active" | "inactive" | "draft";
   imageURL?: string;
   questions: IQuestion[];
@@ -65,6 +69,22 @@ const ScreeningSchema: Schema = new Schema(
       type: String,
       trim: true,
       maxlength: [2000, "Description cannot exceed 2000 characters"],
+    },
+    overview: {
+      type: String,
+      trim: true,
+    },
+    purpose: {
+      type: String,
+      trim: true,
+    },
+    duration: {
+      type: String,
+      trim: true,
+    },
+    benefits: {
+      type: [String],
+      trim: true,
     },
     questions: {
       type: [

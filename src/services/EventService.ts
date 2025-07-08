@@ -62,7 +62,6 @@ class EventService {
   async getBySlug(slug: string, userID: string | null) {
     const event = await Event.findOne({ "SEO.slug": slug });
     let registration = null;
-    console.log("user id: ", userID);
 
     if (event && userID) {
       registration = await Registration.findOne({ event: event._id, user: userID })

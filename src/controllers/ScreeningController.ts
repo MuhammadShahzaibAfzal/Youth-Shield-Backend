@@ -25,6 +25,7 @@ class ScreeningController {
         ...req.body,
         imageURL: imageURL,
         questions: req.body.questions ? JSON.parse(req.body.questions) : [],
+        benefits: req.body.benefits ? JSON.parse(req.body.benefits) : [],
       });
 
       res.status(201).json(screening);
@@ -112,6 +113,10 @@ class ScreeningController {
         interpretations: req.body.interpretations
           ? JSON.parse(req.body.interpretations)
           : screeningExist.interpretations,
+
+        benefits: req.body.benefits
+          ? JSON.parse(req.body.benefits)
+          : screeningExist.benefits,
       });
 
       res.status(200).json(screening);
