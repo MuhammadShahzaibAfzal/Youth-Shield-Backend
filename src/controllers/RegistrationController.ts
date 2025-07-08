@@ -60,7 +60,7 @@ class RegistrationController {
 
       res.status(200).json({
         success: true,
-        data: registrations,
+        registrations,
         currentPage: Number(page),
         totalPages: Math.ceil(total / Number(limit)),
         limit: Number(limit),

@@ -20,7 +20,8 @@ class RegistrationService {
     const registrations = await Registration.find({ event: new Types.ObjectId(eventId) })
       .skip(skip)
       .limit(limit)
-      .populate("user")
+      .populate("user", "firstName lastName imageURL email")
+      .populate("event")
       .sort({ createdAt: -1 });
 
     const total = await Registration.countDocuments({
@@ -38,6 +39,7 @@ class RegistrationService {
       .skip(skip)
       .limit(limit)
       .populate("event")
+
       .sort({ createdAt: -1 });
     const total = await Registration.countDocuments({
       user: new Types.ObjectId(userId),
