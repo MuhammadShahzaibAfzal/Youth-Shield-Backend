@@ -12,12 +12,14 @@ import { UploadedFile } from "express-fileupload";
 import { v4 as uuidv4 } from "uuid";
 import { IUser } from "../models/UserModel";
 import { FileStorage } from "../types/storage";
+import SchoolService from "../services/SchoolService";
 class AuthController {
   constructor(
     private userService: UserService,
     private tokenService: TokenService,
     private mailService: MailNotificationService,
-    private storage: FileStorage
+    private storage: FileStorage,
+    private schoolService: SchoolService
   ) {}
 
   private setAuthCookies(res: Response, accessToken: string, refreshToken: string) {
@@ -137,6 +139,10 @@ class AuthController {
       if (isEmailExist) {
         return next(createHttpError(400, "Email already exist."));
       }
+      let school = null;
+      if (highSchool) {
+        school = await this.schoolService.findOrCreate(highSchool);
+      }
 
       const user = await this.userService.createUser({
         email,
@@ -145,7 +151,7 @@ class AuthController {
         password,
         role,
         gender,
-        highSchool,
+        highSchool: school?._id as any,
         dob,
         country,
         countryCode,
@@ -332,8 +338,17 @@ class AuthController {
     if (!result.isEmpty()) {
       return res.status(400).json({ errors: result.array() });
     }
-    const { firstName, lastName, email, password, dob, country, gender, countryCode } =
-      req.body;
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      dob,
+      country,
+      gender,
+      countryCode,
+      highSchool,
+    } = req.body;
     const userId = req.auth.sub;
     try {
       const user = await this.userService.findUserById(userId);
@@ -358,6 +373,10 @@ class AuthController {
           contentType: image.mimetype,
         });
       }
+      let school = null;
+      if (highSchool) {
+        school = await this.schoolService.findOrCreate(highSchool);
+      }
       const updateData: Partial<IUser> = {
         firstName,
         lastName,
@@ -368,6 +387,7 @@ class AuthController {
         country,
         gender,
         countryCode,
+        highSchool: school?._id,
       };
       const updatedUser = await this.userService.update(userId, updateData);
       if (!updatedUser) {
@@ -402,6 +422,32 @@ class AuthController {
       const { to, subject, text, html } = req.body;
       await this.mailService.send({ to, subject, text, html });
       return res.status(200).json({ message: "Email sent successfully." });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async searchSchool(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { query, limit = 10 } = req.query;
+      const schools = await this.schoolService.getSchools({
+        limit: Number(limit),
+        query: query as string,
+      });
+      return res.status(200).json(schools);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async createSchool(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name } = req.body;
+
+      const school = await this.schoolService.create({
+        name,
+      });
+      return res.status(200).json(school);
     } catch (error) {
       next(error);
     }

@@ -8,7 +8,7 @@ export interface IContestSubmission extends Document {
 
   userDemographics: {
     country: string;
-    school?: string;
+    school?: mongoose.Types.ObjectId | string;
   };
   //   timeTaken: number; // in seconds
 }
@@ -42,7 +42,7 @@ const contestSubmissionSchema: Schema = new Schema<IContestSubmission>(
     // },
     userDemographics: {
       country: { type: String, required: true },
-      school: { type: String },
+      school: { type: Schema.Types.ObjectId, ref: "School" },
     },
   },
   {

@@ -20,6 +20,7 @@ import { NodeMailerNotificationService } from "../services/NodeMailerService";
 import authenticate from "../middlewares/authenticate";
 import { AuthRequest } from "../types";
 import validateRefreshToken from "../middlewares/validateRefreshToken";
+import SchoolService from "../services/SchoolService";
 
 const authRouter = Router();
 
@@ -28,11 +29,13 @@ const tokenServiceDB = new RefreshTokenServiceDB();
 const tokenService = new TokenService(tokenServiceDB);
 const mailService = new NodeMailerNotificationService();
 const storageService = new CloudinaryStorageService();
+const schoolService = new SchoolService();
 const authController = new AuthController(
   userService,
   tokenService,
   mailService,
-  storageService
+  storageService,
+  schoolService
 );
 
 authRouter.post(
@@ -122,6 +125,20 @@ authRouter.post(
   "/request-demo",
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     await authController.sendEmail(req, res, next);
+  })
+);
+
+authRouter.get(
+  "/schools",
+  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    await authController.searchSchool(req, res, next);
+  })
+);
+
+authRouter.post(
+  "/schools",
+  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    await authController.createSchool(req, res, next);
   })
 );
 

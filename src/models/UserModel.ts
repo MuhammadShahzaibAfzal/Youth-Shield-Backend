@@ -8,7 +8,7 @@ export interface IUser extends Document {
   email: string;
   dob?: Date;
   gender?: "male" | "female";
-  highSchool?: string;
+  highSchool?: mongoose.Types.ObjectId;
   country?: string;
   countryCode?: string;
   password: string;
@@ -30,7 +30,10 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
   country: String,
   countryCode: String,
   gender: { type: String, enum: ["male", "female"] },
-  highSchool: String,
+  highSchool: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "School",
+  },
   password: { type: String, required: true },
   role: {
     type: String,

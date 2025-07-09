@@ -2,16 +2,16 @@ import User, { IUser } from "../models/UserModel";
 
 class UserService {
   async findUserByEmail(email: string) {
-    return await User.findOne({ email }, " -__v");
+    return await User.findOne({ email }, " -__v").populate("highSchool");
   }
 
   async findUserById(id: string, isPasswordIncluded: boolean = false) {
     const projection = isPasswordIncluded ? "" : "-password";
-    return await User.findById(id).select(projection);
+    return await User.findById(id).select(projection).populate("highSchool");
   }
 
   async createUser(data: Partial<IUser>) {
-    return await User.create(data);
+    return (await User.create(data)).populate("highSchool");
   }
 
   async update(id: string, data: Partial<IUser>) {
@@ -23,7 +23,9 @@ class UserService {
     }
 
     // Perform the update operation
-    return await User.findOneAndUpdate({ _id: id }, data, { new: true });
+    return await User.findOneAndUpdate({ _id: id }, data, { new: true }).populate(
+      "highSchool"
+    );
   }
 
   async delete(id: string) {
@@ -31,13 +33,15 @@ class UserService {
   }
 
   async getAll() {
-    return await User.find({}).select("-password -__v");
+    return await User.find({}).select("-password -__v").populate("highSchool");
   }
 
   async getAllUsers() {
     return await User.find({
       role: "user",
-    }).select("-password -__v");
+    })
+      .select("-password -__v")
+      .populate("highSchool");
   }
 }
 
