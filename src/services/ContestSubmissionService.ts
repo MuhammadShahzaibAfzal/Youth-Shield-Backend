@@ -88,8 +88,29 @@ class ContestSubmissionService {
       .populate("contest", "name slug");
   }
 
-  async aggregateTotalScores() {
-    return await ContestSubmission.aggregate([
+  async aggregateTotalScores({
+    searchTerm,
+    countryFilter,
+    schoolFilter,
+  }: {
+    searchTerm?: string;
+    countryFilter?: string;
+    schoolFilter?: string;
+  }) {
+    const matchStage: any = {};
+
+    // Apply filters if provided
+    if (countryFilter) {
+      matchStage["userDemographics.country"] = countryFilter;
+    }
+
+    if (schoolFilter) {
+      matchStage["userDemographics.school"] = new mongoose.Types.ObjectId(schoolFilter);
+    }
+
+    const pipeline: any[] = [
+      // First match stage for contest submissions
+      ...(Object.keys(matchStage).length > 0 ? [{ $match: matchStage }] : []),
       {
         $group: {
           _id: "$user",
@@ -107,6 +128,34 @@ class ContestSubmissionService {
       {
         $unwind: "$user",
       },
+      // Second match stage for user fields if searchTerm is provided
+      ...(searchTerm
+        ? [
+            {
+              $match: {
+                $or: [
+                  { "user.firstName": { $regex: searchTerm, $options: "i" } },
+                  { "user.lastName": { $regex: searchTerm, $options: "i" } },
+                ],
+              },
+            },
+          ]
+        : []),
+      // Lookup school information
+      {
+        $lookup: {
+          from: "schools",
+          localField: "user.highSchool",
+          foreignField: "_id",
+          as: "school",
+        },
+      },
+      {
+        $unwind: {
+          path: "$school",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
       {
         $project: {
           totalScore: 1,
@@ -115,6 +164,7 @@ class ContestSubmissionService {
           "user.imageURL": 1,
           "user.country": 1,
           "user.countryCode": 1,
+          "school.name": 1,
         },
       },
       {
@@ -123,7 +173,9 @@ class ContestSubmissionService {
       {
         $limit: 10,
       },
-    ]);
+    ];
+
+    return await ContestSubmission.aggregate(pipeline);
   }
 
   /**
