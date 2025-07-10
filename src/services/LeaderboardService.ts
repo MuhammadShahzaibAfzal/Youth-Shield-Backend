@@ -3,6 +3,7 @@ import NodeCache from "node-cache";
 import { ContestSubmission } from "../models/ContestSubmissionModel";
 import { ScreeningSubmission } from "../models/ScreeningSubmissionModel";
 import User from "../models/UserModel";
+import logger from "../config/logger";
 
 interface LeaderboardUser {
   _id: string;
@@ -28,7 +29,9 @@ interface FilterOptions {
 
 class LeaderboardService {
   private cache: NodeCache;
-  private cacheTTL = 60 * 5; // 5 minutes
+  private cacheTTL = 60 * 60; // 60 minutes
+  private refreshInterval?: NodeJS.Timeout;
+  private updatedAt: Date = new Date();
 
   constructor() {
     this.cache = new NodeCache({
@@ -40,7 +43,15 @@ class LeaderboardService {
 
   private initializeCacheRefresh(): void {
     this.refreshCache();
-    setInterval(() => this.refreshCache(), this.cacheTTL * 1000);
+    // Set up periodic refresh
+    this.refreshInterval = setInterval(() => {
+      logger.info("Auto-refreshing cache at", new Date().toISOString());
+      this.refreshCache().catch((err) => {
+        logger.error("Periodic refresh failed:", err);
+        console.error("Periodic refresh failed:", err);
+      });
+      this.updatedAt = new Date();
+    }, this.cacheTTL * 1000);
   }
 
   private async refreshCache(): Promise<void> {
@@ -207,7 +218,11 @@ class LeaderboardService {
     return parts.join(":");
   }
 
-  public async getLeaderboard(filters: FilterOptions = {}): Promise<LeaderboardUser[]> {
+  public async getLeaderboard(filters: FilterOptions = {}): Promise<{
+    leaderboard: LeaderboardUser[];
+    totalParticipants: number;
+    updatedAt: Date;
+  }> {
     const cacheKey = this.getCacheKey(filters);
     let cached = this.cache.get<LeaderboardUser[]>(cacheKey);
 
@@ -237,7 +252,12 @@ class LeaderboardService {
     // Apply pagination
     const offset = filters.offset || 0;
     const limit = filters.limit || cached.length;
-    return cached.slice(offset, offset + limit);
+    const result = cached.slice(offset, offset + limit);
+    return {
+      leaderboard: result,
+      totalParticipants: cached.length,
+      updatedAt: this.updatedAt,
+    };
   }
 
   private applyAdditionalFilters(

@@ -7,7 +7,7 @@ class LeaderBoardController {
   async getLeaderBoard(req: Request, res: Response, next: NextFunction) {
     try {
       const { contest, screening, countryFilter, schoolFilter } = req.query;
-      const leaderboard = await this.leaderBoardServie.getLeaderboard({
+      const result = await this.leaderBoardServie.getLeaderboard({
         limit: 10,
         school: schoolFilter === "all" ? undefined : (schoolFilter as string),
         country: countryFilter === "all" ? undefined : (countryFilter as string),
@@ -15,7 +15,9 @@ class LeaderBoardController {
         screening: screening ? (screening as string) : undefined,
       });
       res.status(200).json({
-        users: leaderboard,
+        users: result.leaderboard,
+        totalParticipants: result.totalParticipants,
+        updatedAt: result.updatedAt,
       });
     } catch (error) {
       next(error);
