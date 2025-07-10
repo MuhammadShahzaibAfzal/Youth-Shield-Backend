@@ -1,11 +1,11 @@
 import { NextFunction, Request, Response, Router } from "express";
 import LeaderBoardController from "../controllers/LeaderBoardController";
 import asyncHandler from "../utils/asyncHandler";
-import ContestSubmissionService from "../services/ContestSubmissionService";
+import LeaderboardService from "../services/LeaderboardService";
 
 const leaderBoardRouter = Router();
-const contestSubmissionService = new ContestSubmissionService();
-const leaderBoardController = new LeaderBoardController(contestSubmissionService);
+const leaderBoardService = new LeaderboardService();
+const leaderBoardController = new LeaderBoardController(leaderBoardService);
 
 leaderBoardRouter.get(
   "/",

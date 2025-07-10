@@ -1,31 +1,21 @@
 import { NextFunction, Request, Response } from "express";
-import ContestSubmissionService from "../services/ContestSubmissionService";
+import LeaderboardService from "../services/LeaderboardService";
 
 class LeaderBoardController {
-  constructor(private contestSubmissionService: ContestSubmissionService) {}
+  constructor(private leaderBoardServie: LeaderboardService) {}
 
   async getLeaderBoard(req: Request, res: Response, next: NextFunction) {
-    const { searchTerm, countryFilter, schoolFilter } = req.query;
-    console.log(searchTerm, countryFilter, schoolFilter);
     try {
-      const contestSubmission = await this.contestSubmissionService.aggregateTotalScores({
-        searchTerm: searchTerm as string,
-        countryFilter: countryFilter === "all" ? undefined : (countryFilter as string),
-        schoolFilter: schoolFilter === "all" ? undefined : (schoolFilter as string),
+      const { contest, screening, countryFilter, schoolFilter } = req.query;
+      const leaderboard = await this.leaderBoardServie.getLeaderboard({
+        limit: 10,
+        school: schoolFilter === "all" ? undefined : (schoolFilter as string),
+        country: countryFilter === "all" ? undefined : (countryFilter as string),
+        contest: contest ? (contest as string) : undefined,
+        screening: screening ? (screening as string) : undefined,
       });
-      return res.status(200).json({
-        message: "LeaderBoard fetched successfully",
-
-        users: contestSubmission?.map((entry, index) => ({
-          _id: entry._id,
-          name: `${entry.user.firstName} ${entry.user.lastName}`,
-          imageURL: entry.user.imageURL,
-          points: entry.totalScore,
-          country: entry.user.country,
-          countryCode: entry.user.countryCode,
-          rank: index + 1,
-          school: "Testing",
-        })),
+      res.status(200).json({
+        users: leaderboard,
       });
     } catch (error) {
       next(error);
