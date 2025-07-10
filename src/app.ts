@@ -12,6 +12,7 @@ import contestSubmissionRouter from "./routes/contestSubmissionRoutes";
 import leaderBoardRouter from "./routes/leaderBoardRoutes";
 import eventRouter from "./routes/eventRoutes";
 import registrationRouter from "./routes/registrationRoutes";
+import screeningSubmissionRouter from "./routes/screeningSubmissionRoutes";
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/categories", categoryRouter);
 app.use("/api/news", newsRouter);
 app.use("/api/screenings", screeningRouter);
+app.use("/api/screening-submissions", screeningSubmissionRouter);
 app.use("/api/contests", contestRouter);
 app.use("/api/contest-submissions", contestSubmissionRouter);
 app.use("/api/leaderboard", leaderBoardRouter);

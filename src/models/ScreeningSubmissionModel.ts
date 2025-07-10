@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema } from "mongoose";
 
-export interface IContestSubmission extends Document {
-  contest: mongoose.Types.ObjectId | string;
+export interface IScreeningSubmission extends Document {
+  screening: mongoose.Types.ObjectId | string;
   user: mongoose.Types.ObjectId | string;
   totalScore: number;
   submittedAt: Date;
@@ -10,14 +10,13 @@ export interface IContestSubmission extends Document {
     country: string;
     school?: mongoose.Types.ObjectId | string;
   };
-  //   timeTaken: number; // in seconds
 }
 
-const contestSubmissionSchema: Schema = new Schema<IContestSubmission>(
+const screeningSubmissionSchema: Schema = new Schema<IScreeningSubmission>(
   {
-    contest: {
+    screening: {
       type: Schema.Types.ObjectId,
-      ref: "Contest",
+      ref: "Screening",
       required: true,
       index: true,
     },
@@ -35,11 +34,6 @@ const contestSubmissionSchema: Schema = new Schema<IContestSubmission>(
       type: Date,
       default: Date.now,
     },
-    // timeTaken: {
-    //   type: Number,
-    //   required: true,
-    //   comment: "Time taken in seconds",
-    // },
     userDemographics: {
       country: { type: String, required: true },
       school: { type: Schema.Types.ObjectId, ref: "School" },
@@ -52,12 +46,14 @@ const contestSubmissionSchema: Schema = new Schema<IContestSubmission>(
   }
 );
 
-contestSubmissionSchema.index({ contest: 1, user: 1 }, { unique: true });
-contestSubmissionSchema.index({ contest: 1, totalScore: -1 });
-contestSubmissionSchema.index({ "userDemographics.country": 1, totalScore: -1 });
-// contestSubmissionSchema.index({ "userDemographics.age": 1, totalScore: -1 });
+// Unique submission per screening per user
+screeningSubmissionSchema.index({ screening: 1, user: 1 }, { unique: true });
 
-export const ContestSubmission = mongoose.model<IContestSubmission>(
-  "ContestSubmission",
-  contestSubmissionSchema
+// Indexes for leaderboard-like queries
+screeningSubmissionSchema.index({ screening: 1, totalScore: -1 });
+screeningSubmissionSchema.index({ "userDemographics.country": 1, totalScore: -1 });
+
+export const ScreeningSubmission = mongoose.model<IScreeningSubmission>(
+  "ScreeningSubmission",
+  screeningSubmissionSchema
 );

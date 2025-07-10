@@ -7,12 +7,19 @@ import fileUpload from "express-fileupload";
 import asyncHandler from "../utils/asyncHandler";
 import ScreeningService from "../services/ScreeningService";
 import ScreeningController from "../controllers/ScreeningController";
+import ScreeningSubmissionService from "../services/ScreeningSubmissonService";
+import { AuthRequest } from "../types";
 
 const screeningRouter = Router();
 const storage = new CloudinaryStorageService();
 const screeningService = new ScreeningService();
+const screeningSubmissionService = new ScreeningSubmissionService();
 
-const screeningController = new ScreeningController(storage, screeningService);
+const screeningController = new ScreeningController(
+  storage,
+  screeningService,
+  screeningSubmissionService
+);
 
 screeningRouter.post(
   "/",
@@ -50,9 +57,9 @@ screeningRouter.get(
 
 screeningRouter.get(
   "/slug/:slug",
-
+  authenticate,
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    await screeningController.getBySlug(req, res, next);
+    await screeningController.getBySlug(req as AuthRequest, res, next);
   })
 );
 

@@ -4,9 +4,15 @@ import { UploadedFile } from "express-fileupload";
 import { v4 as uuidv4 } from "uuid";
 import createHttpError from "http-errors";
 import ScreeningService from "../services/ScreeningService";
+import { AuthRequest } from "../types";
+import ScreeningSubmissionService from "../services/ScreeningSubmissonService";
 
 class ScreeningController {
-  constructor(private storage: FileStorage, private screeningService: ScreeningService) {}
+  constructor(
+    private storage: FileStorage,
+    private screeningService: ScreeningService,
+    private screeningSubmissionService: ScreeningSubmissionService
+  ) {}
 
   async create(req: Request, res: Response, next: NextFunction) {
     try {
@@ -72,14 +78,23 @@ class ScreeningController {
     }
   }
 
-  async getBySlug(req: Request, res: Response, next: NextFunction) {
+  async getBySlug(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      const userID = req?.auth?.sub || req?.auth?.id;
       const { slug } = req.params;
       const screening = await this.screeningService.getScreeningBySlug(slug);
       if (!screening) {
         return next(createHttpError(404, "Screening not found"));
       }
-      res.status(200).json(screening);
+      const isAlreadySubmitted = await this.screeningSubmissionService.hasUserSubmitted(
+        userID as string,
+        screening._id as string
+      );
+
+      res.status(200).json({
+        ...screening.toObject(),
+        isAlreadySubmitted,
+      });
     } catch (error) {
       next(error);
     }
