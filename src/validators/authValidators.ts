@@ -155,8 +155,8 @@ export const updateProfileValidator = checkSchema({
       errorMessage: "Last Name should be a string",
     },
     isLength: {
-      options: { min: 3, max: 50 },
-      errorMessage: "Last Name should be between 3 and 50 characters",
+      options: { min: 1, max: 50 },
+      errorMessage: "Last Name should be between 1 and 50 characters",
     },
     notEmpty: {
       errorMessage: "Last Name is required!",
