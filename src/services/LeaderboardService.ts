@@ -19,6 +19,7 @@ interface LeaderboardUser {
 }
 
 interface FilterOptions {
+  type?: "all" | "contests" | "screenings";
   country?: string;
   school?: mongoose.Types.ObjectId | string;
   contest?: mongoose.Types.ObjectId | string;
@@ -72,31 +73,59 @@ class LeaderboardService {
       await this.refreshStatisticsCache(globalLeaderboard);
 
       // Refresh contest leaderboards
-      const contestIds = await ContestSubmission.distinct("contest");
-      await Promise.all(
-        contestIds.map(async (contestId) => {
-          const contestKey = `contest-${contestId}`;
-          const contestLeaderboard = await this.calculateContestLeaderboard(contestId);
-          this.cache.set(contestKey, contestLeaderboard);
-        })
-      );
+      // const contestIds = await ContestSubmission.distinct("contest");
+      // await Promise.all(
+      //   contestIds.map(async (contestId) => {
+      //     const contestKey = `contest-${contestId}`;
+      //     const contestLeaderboard = await this.calculateContestLeaderboard(contestId);
+      //     this.cache.set(contestKey, contestLeaderboard);
+      //   })
+      // );
 
       // Refresh screening leaderboards
-      const screeningIds = await ScreeningSubmission.distinct("screening");
-      await Promise.all(
-        screeningIds.map(async (screeningId) => {
-          const screeningKey = `screening-${screeningId}`;
-          const screeningLeaderboard = await this.calculateScreeningLeaderboard(
-            screeningId
-          );
-          this.cache.set(screeningKey, screeningLeaderboard);
-        })
-      );
+      // const screeningIds = await ScreeningSubmission.distinct("screening");
+      // await Promise.all(
+      //   screeningIds.map(async (screeningId) => {
+      //     const screeningKey = `screening-${screeningId}`;
+      //     const screeningLeaderboard = await this.calculateScreeningLeaderboard(
+      //       screeningId
+      //     );
+      //     this.cache.set(screeningKey, screeningLeaderboard);
+      //   })
+      // );
 
       console.log("All leaderboard caches refreshed successfully");
     } catch (error) {
       console.error("Failed to refresh leaderboard caches:", error);
     }
+  }
+
+  private async calculateTypeLeaderboard(
+    type: "contests" | "screenings"
+  ): Promise<LeaderboardUser[]> {
+    if (type === "contests") {
+      const submissions = await ContestSubmission.find().lean();
+      return this.processSubmissions(submissions);
+    } else {
+      const submissions = await ScreeningSubmission.find().lean();
+      return this.processSubmissions(submissions);
+    }
+  }
+
+  private async processSubmissions(submissions: any[]): Promise<LeaderboardUser[]> {
+    const userPointsMap = new Map<
+      string,
+      { points: number; userId: mongoose.Types.ObjectId }
+    >();
+
+    submissions.forEach((submission) => {
+      const userId = submission.user.toString();
+      const current = userPointsMap.get(userId) || { points: 0, userId: submission.user };
+      current.points += submission.totalScore;
+      userPointsMap.set(userId, current);
+    });
+
+    return this.createLeaderboardFromMap(userPointsMap);
   }
 
   private async calculateGlobalLeaderboard(): Promise<LeaderboardUser[]> {
@@ -249,33 +278,78 @@ class LeaderboardService {
     return parts.join(":");
   }
 
-  private async getStatistics(): Promise<{
+  private async getStatistics(type?: "all" | "contests" | "screenings"): Promise<{
     totalParticipants: number;
     totalSchools: number;
     totalCountries: number;
   }> {
     // Try to get from cache first
-    const totalParticipants = this.cache.get<number>("stats:totalParticipants") ?? 0;
-    const totalSchools = this.cache.get<number>("stats:totalSchools") ?? 0;
-    const totalCountries = this.cache.get<number>("stats:totalCountries") ?? 0;
+    const typeKey = type ? `stats:${type}` : "stats:global";
+    // Try to get from cache first
+    const cachedStats = {
+      totalParticipants: this.cache.get<number>(`${typeKey}:totalParticipants`),
+      totalSchools: this.cache.get<number>(`${typeKey}:totalSchools`),
+      totalCountries: this.cache.get<number>(`${typeKey}:totalCountries`),
+    };
 
-    // If any stat is missing, recalculate
-    if (totalParticipants === 0 || totalSchools === 0 || totalCountries === 0) {
-      const globalLeaderboard =
-        this.cache.get<LeaderboardUser[]>("global") ||
-        (await this.calculateGlobalLeaderboard());
-      await this.refreshStatisticsCache(globalLeaderboard);
-      return {
-        totalParticipants: globalLeaderboard.length,
-        totalSchools: new Set(globalLeaderboard.map((u) => u.schoolId)).size - 1,
-        totalCountries: new Set(globalLeaderboard.map((u) => u.country)).size - 1,
+    if (
+      cachedStats.totalParticipants !== undefined &&
+      cachedStats.totalSchools !== undefined &&
+      cachedStats.totalCountries !== undefined
+    ) {
+      return cachedStats as {
+        totalParticipants: number;
+        totalSchools: number;
+        totalCountries: number;
       };
     }
 
-    return { totalParticipants, totalSchools, totalCountries };
+    // If not in cache, calculate fresh
+    let leaderboard: LeaderboardUser[];
+    switch (type) {
+      case "contests":
+        leaderboard = await this.calculateTypeLeaderboard("contests");
+        break;
+      case "screenings":
+        leaderboard = await this.calculateTypeLeaderboard("screenings");
+        break;
+      case "all":
+      default:
+        leaderboard =
+          this.cache.get<LeaderboardUser[]>("global") ||
+          (await this.calculateGlobalLeaderboard());
+        break;
+    }
+
+    // Calculate unique schools and countries
+    const schools = new Set<string>();
+    const countries = new Set<string>();
+
+    leaderboard.forEach((user) => {
+      if (user.schoolId) schools.add(user.schoolId);
+      if (user.country) countries.add(user.country);
+    });
+
+    const stats = {
+      totalParticipants: leaderboard.length,
+      totalSchools: schools.size,
+      totalCountries: countries.size,
+    };
+
+    // Cache the statistics
+    this.cache.set(
+      `${typeKey}:totalParticipants`,
+      stats.totalParticipants,
+      this.cacheTTL
+    );
+    this.cache.set(`${typeKey}:totalSchools`, stats.totalSchools, this.cacheTTL);
+    this.cache.set(`${typeKey}:totalCountries`, stats.totalCountries, this.cacheTTL);
+
+    return stats;
   }
 
   public async getLeaderboard(filters: FilterOptions = {}): Promise<LeaderboardResponse> {
+    const type = filters.type || "all";
     const cacheKey = this.getCacheKey(filters);
     let cached = this.cache.get<LeaderboardUser[]>(cacheKey);
 
@@ -293,9 +367,25 @@ class LeaderboardService {
           this.cache.get<LeaderboardUser[]>(screeningKey) ||
           (await this.calculateScreeningLeaderboard(filters.screening));
       } else {
-        baseLeaderboard =
-          this.cache.get<LeaderboardUser[]>("global") ||
-          (await this.calculateGlobalLeaderboard());
+        // Handle type filter
+        switch (type) {
+          case "contests":
+            baseLeaderboard =
+              this.cache.get<LeaderboardUser[]>("type-contests") ||
+              (await this.calculateTypeLeaderboard("contests"));
+            break;
+          case "screenings":
+            baseLeaderboard =
+              this.cache.get<LeaderboardUser[]>("type-screenings") ||
+              (await this.calculateTypeLeaderboard("screenings"));
+            break;
+          case "all":
+          default:
+            baseLeaderboard =
+              this.cache.get<LeaderboardUser[]>("global") ||
+              (await this.calculateGlobalLeaderboard());
+            break;
+        }
       }
 
       cached = this.applyAdditionalFilters(baseLeaderboard, filters);
@@ -306,8 +396,9 @@ class LeaderboardService {
     const offset = filters.offset || 0;
     const limit = filters.limit || cached.length;
     const result = cached.slice(offset, offset + limit);
-    const { totalCountries, totalParticipants, totalSchools } =
-      await this.getStatistics();
+    const { totalCountries, totalParticipants, totalSchools } = await this.getStatistics(
+      filters.type
+    );
     return {
       leaderboard: result,
       totalParticipants: totalParticipants,
