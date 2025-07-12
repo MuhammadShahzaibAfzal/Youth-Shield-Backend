@@ -20,7 +20,14 @@ class RegistrationService {
     const registrations = await Registration.find({ event: new Types.ObjectId(eventId) })
       .skip(skip)
       .limit(limit)
-      .populate("user", "-password -_v -forgetPasswordToken -forgetPasswordTokenExpiry ")
+      .populate({
+        path: "user",
+        select: "-password -__v -forgetPasswordToken -forgetPasswordTokenExpiry",
+        populate: {
+          path: "highSchool",
+          select: "name _id",
+        },
+      })
       .populate("event")
       .sort({ createdAt: -1 });
 
