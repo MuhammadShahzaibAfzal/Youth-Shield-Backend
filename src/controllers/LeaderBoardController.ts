@@ -16,8 +16,10 @@ class LeaderBoardController {
       });
       res.status(200).json({
         users: result.leaderboard,
-        totalParticipants: result.totalParticipants,
         updatedAt: result.updatedAt,
+        totalParticipants: result.totalParticipants,
+        totalSchools: result.totalSchools,
+        totalCountries: result.totalCountries,
       });
     } catch (error) {
       next(error);

@@ -27,6 +27,14 @@ interface FilterOptions {
   offset?: number;
 }
 
+interface LeaderboardResponse {
+  leaderboard: LeaderboardUser[];
+  totalParticipants: number;
+  totalSchools: number;
+  totalCountries: number;
+  updatedAt: Date;
+}
+
 class LeaderboardService {
   private cache: NodeCache;
   private cacheTTL = 60 * 60; // 60 minutes
@@ -43,12 +51,10 @@ class LeaderboardService {
 
   private initializeCacheRefresh(): void {
     this.refreshCache();
-    // Set up periodic refresh
     this.refreshInterval = setInterval(() => {
       logger.info("Auto-refreshing cache at", new Date().toISOString());
       this.refreshCache().catch((err) => {
         logger.error("Periodic refresh failed:", err);
-        console.error("Periodic refresh failed:", err);
       });
       this.updatedAt = new Date();
     }, this.cacheTTL * 1000);
@@ -61,6 +67,9 @@ class LeaderboardService {
       // Refresh global leaderboard
       const globalLeaderboard = await this.calculateGlobalLeaderboard();
       this.cache.set("global", globalLeaderboard);
+
+      // Refresh statistics
+      await this.refreshStatisticsCache(globalLeaderboard);
 
       // Refresh contest leaderboards
       const contestIds = await ContestSubmission.distinct("contest");
@@ -209,6 +218,28 @@ class LeaderboardService {
     return leaderboard;
   }
 
+  private async refreshStatisticsCache(leaderboard: LeaderboardUser[]): Promise<void> {
+    try {
+      // Calculate unique schools and countries
+      const schools = new Set<string>();
+      const countries = new Set<string>();
+
+      leaderboard.forEach((user) => {
+        if (user.schoolId) schools.add(user.schoolId);
+        if (user.country) countries.add(user.country);
+      });
+
+      // Cache the statistics with longer TTL
+      this.cache.set("stats:totalParticipants", leaderboard.length, this.cacheTTL);
+      this.cache.set("stats:totalSchools", schools.size, this.cacheTTL);
+      this.cache.set("stats:totalCountries", countries.size, this.cacheTTL);
+
+      logger.info("Statistics cache refreshed");
+    } catch (error) {
+      logger.error("Failed to refresh statistics cache:", error);
+    }
+  }
+
   private getCacheKey(filters: FilterOptions): string {
     const parts = ["leaderboard"];
     if (filters.country) parts.push(`country-${filters.country}`);
@@ -218,11 +249,33 @@ class LeaderboardService {
     return parts.join(":");
   }
 
-  public async getLeaderboard(filters: FilterOptions = {}): Promise<{
-    leaderboard: LeaderboardUser[];
+  private async getStatistics(): Promise<{
     totalParticipants: number;
-    updatedAt: Date;
+    totalSchools: number;
+    totalCountries: number;
   }> {
+    // Try to get from cache first
+    const totalParticipants = this.cache.get<number>("stats:totalParticipants") ?? 0;
+    const totalSchools = this.cache.get<number>("stats:totalSchools") ?? 0;
+    const totalCountries = this.cache.get<number>("stats:totalCountries") ?? 0;
+
+    // If any stat is missing, recalculate
+    if (totalParticipants === 0 || totalSchools === 0 || totalCountries === 0) {
+      const globalLeaderboard =
+        this.cache.get<LeaderboardUser[]>("global") ||
+        (await this.calculateGlobalLeaderboard());
+      await this.refreshStatisticsCache(globalLeaderboard);
+      return {
+        totalParticipants: globalLeaderboard.length,
+        totalSchools: new Set(globalLeaderboard.map((u) => u.schoolId)).size - 1,
+        totalCountries: new Set(globalLeaderboard.map((u) => u.country)).size - 1,
+      };
+    }
+
+    return { totalParticipants, totalSchools, totalCountries };
+  }
+
+  public async getLeaderboard(filters: FilterOptions = {}): Promise<LeaderboardResponse> {
     const cacheKey = this.getCacheKey(filters);
     let cached = this.cache.get<LeaderboardUser[]>(cacheKey);
 
@@ -253,10 +306,14 @@ class LeaderboardService {
     const offset = filters.offset || 0;
     const limit = filters.limit || cached.length;
     const result = cached.slice(offset, offset + limit);
+    const { totalCountries, totalParticipants, totalSchools } =
+      await this.getStatistics();
     return {
       leaderboard: result,
-      totalParticipants: cached.length,
+      totalParticipants: totalParticipants,
       updatedAt: this.updatedAt,
+      totalCountries,
+      totalSchools,
     };
   }
 
