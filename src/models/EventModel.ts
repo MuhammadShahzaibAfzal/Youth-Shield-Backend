@@ -12,6 +12,7 @@ export interface IEvent extends Document {
   summary: string;
   content?: string;
   image: string;
+  cardImage: string;
   type: "virtual" | "physical";
   location?: string;
   isFeatured: boolean;
@@ -29,6 +30,7 @@ const eventSchema = new mongoose.Schema<IEvent>(
     summary: { type: String, required: true },
     content: { type: String, required: false },
     image: { type: String },
+    cardImage: { type: String },
     type: { type: String, enum: ["virtual", "physical"], required: true },
     location: { type: String, required: false },
     eventDate: { type: Date, required: true },

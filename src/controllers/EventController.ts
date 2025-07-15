@@ -28,9 +28,22 @@ class EventController {
         contentType: image.mimetype,
       });
 
+      const cardImage = req.files?.cardImage as UploadedFile;
+      if (!cardImage) {
+        return next(createHttpError(400, "No file uploaded"));
+      }
+
+      const cardImageName = uuidv4();
+      const cardURL = await this.storage.upload({
+        fileName: cardImageName,
+        fileData: cardImage.data.buffer,
+        contentType: cardImage.mimetype,
+      });
+
       const event = await this.eventService.createEvent({
         ...req.body,
         image: url,
+        cardImage: cardURL,
         SEO: parsedSEO,
         eventDate: parsedEventDate,
       });
@@ -133,11 +146,23 @@ class EventController {
         });
       }
 
+      const cardImage = req.files?.cardImage as UploadedFile;
+      let cardURL = null;
+      if (image) {
+        const imageName = uuidv4();
+        cardURL = await this.storage.upload({
+          fileName: imageName,
+          fileData: cardImage.data.buffer,
+          contentType: cardImage.mimetype,
+        });
+      }
+
       const event = await this.eventService.updateEvent(id, {
         ...req.body,
         SEO: parsedSEO,
         eventDate: parsedEventDate,
         image: url ? url : eventExist.image,
+        cardImage: cardURL ? cardURL : eventExist.cardImage,
       });
       res.status(200).json(event);
     } catch (error) {
