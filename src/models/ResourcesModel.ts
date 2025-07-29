@@ -28,7 +28,7 @@ const ResourceSchema = new Schema<IResource>(
   {
     categoryId: {
       type: Schema.Types.ObjectId,
-      ref: "Category",
+      ref: "ResourceCategory",
       required: true,
     },
     name: { type: String, required: true },

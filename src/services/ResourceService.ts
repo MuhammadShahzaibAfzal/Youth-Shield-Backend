@@ -74,7 +74,7 @@ class ResourceService {
     }
 
     const resources = await ResourceModel.find(filter)
-      .populate("categoryId", "name")
+      .populate("categoryId", "name _id")
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });

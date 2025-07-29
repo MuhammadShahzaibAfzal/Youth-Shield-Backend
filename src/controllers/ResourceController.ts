@@ -64,6 +64,8 @@ class ResourcesController {
     try {
       const { categoryId, name, shortDescription, url } = req.body;
 
+      console.log("category id : ", categoryId, req.body);
+
       let pdfUrl: string | undefined;
 
       const pdf = req.files?.pdf as UploadedFile;
