@@ -151,7 +151,8 @@ class ResourcesController {
   }
 
   async getResources(req: Request, res: Response, next: NextFunction) {
-    const { limit = "10", page = "1", categoryId, search } = req.query;
+    // TODO: LIMIT DECREASE IF IMPLEMENT PAGINATION ON FRONTEND
+    const { limit = "10000", page = "1", categoryId, search } = req.query;
 
     try {
       const pageNumber = parseInt(page as string);

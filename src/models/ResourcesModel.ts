@@ -4,6 +4,7 @@ import mongoose, { Schema, Document, model } from "mongoose";
 export interface IResourceCategory extends Document {
   name: string;
   description?: string;
+  icon?:string;
 }
 
 export interface IResource extends Document {
@@ -19,6 +20,7 @@ const ResourceCategorySchema = new Schema<IResourceCategory>(
   {
     name: { type: String, required: true },
     description: { type: String },
+    icon:{type:String}
   },
   { timestamps: true }
 );

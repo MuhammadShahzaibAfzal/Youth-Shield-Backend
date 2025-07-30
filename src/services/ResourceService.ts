@@ -47,7 +47,7 @@ class ResourceService {
 
   async getAllResources() {
     return await ResourceModel.find()
-      .populate("categoryId", "name")
+      .populate("categoryId", "name description icon")
       .sort({ createdAt: -1 });
   }
 
@@ -74,7 +74,7 @@ class ResourceService {
     }
 
     const resources = await ResourceModel.find(filter)
-      .populate("categoryId", "name _id")
+      .populate("categoryId", "name _id icon description")
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
