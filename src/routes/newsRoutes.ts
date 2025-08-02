@@ -7,11 +7,13 @@ import authenticate from "../middlewares/authenticate";
 import { canAccess } from "../middlewares/canAccess";
 import NewsService from "../services/NewsService";
 import CategoryService from "../services/CategoryService";
+import { TranslationService } from "../services/TranslationService";
 
 const newsRouter = Router();
 const storage = new CloudinaryStorageService();
 const newsService = new NewsService();
-const categoryService = new CategoryService();
+const translationService = new TranslationService();
+const categoryService = new CategoryService(translationService);
 const newsController = new NewsController(storage, newsService, categoryService);
 
 newsRouter.post(

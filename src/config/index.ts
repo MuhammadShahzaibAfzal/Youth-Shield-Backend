@@ -19,6 +19,9 @@ const {
   SMTP_PORT,
   MAIL_USER,
   MAIL_PASSWORD,
+  GOOGLE_PROJECT_ID,
+  GOOGLE_APPLICATION_CREDENTIALS,
+  GOOGLE_API_KEY,
 } = process.env;
 
 const Config = {
@@ -38,6 +41,10 @@ const Config = {
   SMTP_PORT,
   MAIL_USER,
   MAIL_PASSWORD,
+  GOOGLE_PROJECT_ID,
+  GOOGLE_APPLICATION_CREDENTIALS,
+  GOOGLE_API_KEY,
+  SUPPORTED_LANGUAGES: ["de", "fr", "es"],
 };
 
 export default Config;
