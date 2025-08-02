@@ -8,7 +8,6 @@ export class GoogleTranslationProvider implements ITranslationProvider {
   constructor() {
     this.translator = new Translate({
       projectId: Config.GOOGLE_PROJECT_ID,
-      //   apiKey: Config.GOOGLE_API_KEY,
     });
   }
 
@@ -39,8 +38,8 @@ export class GoogleTranslationProvider implements ITranslationProvider {
       to: targetLanguage,
     });
 
-    return translations.map((t, i) => ({
-      text: t,
+    return translations.map((text, i) => ({
+      text,
       sourceLanguage: sourceLanguage || "auto",
       targetLanguage,
     }));

@@ -10,7 +10,8 @@ export interface ITranslationProvider {
     targetLanguage: string,
     sourceLanguage?: string
   ): Promise<ITranslationResult>;
-  translateBatch(
+
+  translateBatch?(
     texts: string[],
     targetLanguage: string,
     sourceLanguage?: string

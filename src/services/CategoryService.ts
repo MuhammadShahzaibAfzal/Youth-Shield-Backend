@@ -46,21 +46,44 @@ class CategoryService {
   }
 
   async translateCategory(category: ICategoryModel, languages: string[]): Promise<void> {
-    for (const lang of languages) {
-      if (!category.translations.get(lang)) {
-        const translated = await this.translationService.translateModel(
-          category,
-          lang,
-          "en"
-        );
+    try {
+      // 2. Prepare batch translation requests
+      const translationPromises = languages?.map(async (lang) => {
+        // 3. Use the translation service with error handling
+        const translatedName = await this.translationService
+          .translateText(category.name, lang, "en")
+          .catch((error) => {
+            console.error(`Failed to translate to ${lang}:`, error);
+            return null; // Mark failed translations
+          });
 
-        category.translations.set(lang, {
-          name: translated.name,
-        });
-      }
+        if (translatedName) {
+          return {
+            lang,
+            translation: {
+              name: translatedName,
+            },
+          };
+        }
+        return null;
+      });
+
+      // 4. Execute all translations in parallel
+      const results = await Promise.all(translationPromises);
+
+      // 5. Apply successful translations
+      results.forEach((result) => {
+        if (result) {
+          category.translations.set(result.lang, result.translation);
+        }
+      });
+
+      // 6. Save only once after all translations
+      await category.save();
+    } catch (error: any) {
+      console.error("Error during batch translation:", error);
+      throw new Error(`Category translation failed: ${error.message}`);
     }
-
-    await category.save();
   }
 }
 
