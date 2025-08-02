@@ -14,6 +14,7 @@ import eventRouter from "./routes/eventRoutes";
 import registrationRouter from "./routes/registrationRoutes";
 import screeningSubmissionRouter from "./routes/screeningSubmissionRoutes";
 import resourceRouter from "./routes/resourceRoutes";
+import independentResourceRouter from "./routes/indepResourceRoutes";
 
 const app = express();
 
@@ -43,6 +44,7 @@ app.use("/api/leaderboard", leaderBoardRouter);
 app.use("/api/events", eventRouter);
 app.use("/api/registrations", registrationRouter);
 app.use("/api/resources", resourceRouter);
+app.use("/api/independent-resources", independentResourceRouter);
 
 app.use(globalErrorHandler);
 
