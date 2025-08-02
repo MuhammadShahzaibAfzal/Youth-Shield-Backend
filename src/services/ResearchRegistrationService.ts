@@ -35,6 +35,7 @@ class ResearchRegistrationService {
         { highSchool: regex },
         { city: regex },
         { selectedResearch: regex },
+        { language: regex },
       ];
     }
 
