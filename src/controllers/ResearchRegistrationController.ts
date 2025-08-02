@@ -10,9 +10,27 @@ class ResearchRegistrationController {
   }
 
   async getAll(req: Request, res: Response, next: NextFunction) {
+    const { limit = "20", page = "1", search } = req.query;
+
     try {
-      const records = await this.researchService.getAll();
-      res.status(200).json(records);
+      const pageNumber = parseInt(page as string);
+      const limitNumber = parseInt(limit as string);
+      const skip = (pageNumber - 1) * limitNumber;
+
+      const { registrations, total } =
+        await this.researchService.getAllResearchRegistrations({
+          limit: limitNumber,
+          skip,
+          search: search as string,
+        });
+
+      res.status(200).json({
+        registrations,
+        currentPage: pageNumber,
+        totalPages: Math.ceil(total / limitNumber),
+        total,
+        limit: limitNumber,
+      });
     } catch (error) {
       next(error);
     }

@@ -2,6 +2,11 @@ import ResearchRegistration, {
   IResearchRegistration,
 } from "../models/RegisterResearchModel";
 
+interface GetResearchRegistrationsParams {
+  limit: number;
+  skip: number;
+  search?: string;
+}
 class ResearchRegistrationService {
   async create(data: Partial<IResearchRegistration>) {
     return await ResearchRegistration.create(data);
@@ -15,12 +20,36 @@ class ResearchRegistrationService {
     return await ResearchRegistration.findByIdAndUpdate(id, data, { new: true });
   }
 
-  async getAll() {
-    return await ResearchRegistration.find().populate("highSchool");
+  async getAllResearchRegistrations({
+    limit,
+    skip,
+    search,
+  }: GetResearchRegistrationsParams) {
+    const filter: any = {};
+
+    // Full-text search by firstName, highSchool, city, or selectedResearch
+    if (search) {
+      const regex = new RegExp(search, "i");
+      filter.$or = [
+        { firstName: regex },
+        { highSchool: regex },
+        { city: regex },
+        { selectedResearch: regex },
+      ];
+    }
+
+    const registrations = await ResearchRegistration.find(filter)
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    const total = await ResearchRegistration.countDocuments(filter);
+
+    return { registrations, total };
   }
 
   async getById(id: string) {
-    return await ResearchRegistration.findById(id).populate("highSchool");
+    return await ResearchRegistration.findById(id);
   }
 }
 
