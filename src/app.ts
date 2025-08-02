@@ -15,6 +15,7 @@ import registrationRouter from "./routes/registrationRoutes";
 import screeningSubmissionRouter from "./routes/screeningSubmissionRoutes";
 import resourceRouter from "./routes/resourceRoutes";
 import independentResourceRouter from "./routes/indepResourceRoutes";
+import researchRegistrationRouter from "./routes/registerResearchRoutes";
 
 const app = express();
 
@@ -45,6 +46,7 @@ app.use("/api/events", eventRouter);
 app.use("/api/registrations", registrationRouter);
 app.use("/api/resources", resourceRouter);
 app.use("/api/independent-research", independentResourceRouter);
+app.use("/api/research-registrations", researchRegistrationRouter);
 
 app.use(globalErrorHandler);
 
