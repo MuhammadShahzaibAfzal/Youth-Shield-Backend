@@ -44,7 +44,7 @@ app.use("/api/leaderboard", leaderBoardRouter);
 app.use("/api/events", eventRouter);
 app.use("/api/registrations", registrationRouter);
 app.use("/api/resources", resourceRouter);
-app.use("/api/independent-resources", independentResourceRouter);
+app.use("/api/independent-research", independentResourceRouter);
 
 app.use(globalErrorHandler);
 
