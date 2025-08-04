@@ -3,16 +3,64 @@ import {
   IResourceCategory as ICategory,
   IResource,
   ResourceCategoryModel as CategoryModel,
+  IResourceTranslationCategory,
+  IResourceTranslation,
 } from "../models/ResourcesModel";
 import mongoose from "mongoose";
+import { TranslationService } from "./TranslationService";
+import Config from "../config";
 
 class ResourceService {
+  constructor(private translationService: TranslationService) {}
   async createCategory(data: Partial<ICategory>) {
-    return await CategoryModel.create(data);
+    const schema = [["name"], ["description"]];
+    const input = { name: data.name, description: data.description };
+    const translations = new Map<string, IResourceTranslationCategory>();
+    const translationResults = await Promise.all(
+      Config.SUPPORTED_LANGUAGES.map(async (lang) => {
+        const result = await this.translationService.translateJsonStructure(
+          input,
+          schema,
+          lang
+        );
+        return { lang, result };
+      })
+    );
+    translationResults.forEach(({ lang, result }) => {
+      translations.set(lang, result);
+    });
+
+    return await CategoryModel.create({
+      ...data,
+      translations,
+    });
   }
 
   async updateCategory(id: string, data: Partial<ICategory>) {
-    return await CategoryModel.findByIdAndUpdate(id, data, { new: true });
+    const schema = [["name"], ["description"]];
+    const input = { name: data.name, description: data.description };
+    const translations = new Map<string, IResourceTranslationCategory>();
+    const translationResults = await Promise.all(
+      Config.SUPPORTED_LANGUAGES.map(async (lang) => {
+        const result = await this.translationService.translateJsonStructure(
+          input,
+          schema,
+          lang
+        );
+        return { lang, result };
+      })
+    );
+    translationResults.forEach(({ lang, result }) => {
+      translations.set(lang, result);
+    });
+    return await CategoryModel.findByIdAndUpdate(
+      id,
+      {
+        ...data,
+        translations,
+      },
+      { new: true }
+    );
   }
 
   async deleteCategory(id: string) {
@@ -30,11 +78,53 @@ class ResourceService {
   }
 
   async createResource(data: Partial<IResource>) {
-    return await ResourceModel.create(data);
+    const schema = [["name"], ["shortDescription"]];
+    const input = { name: data.name, shortDescription: data.shortDescription };
+    const translations = new Map<string, IResourceTranslation>();
+    const translationResults = await Promise.all(
+      Config.SUPPORTED_LANGUAGES.map(async (lang) => {
+        const result = await this.translationService.translateJsonStructure(
+          input,
+          schema,
+          lang
+        );
+        return { lang, result };
+      })
+    );
+    translationResults.forEach(({ lang, result }) => {
+      translations.set(lang, result);
+    });
+    return await ResourceModel.create({
+      ...data,
+      translations,
+    });
   }
 
   async updateResource(id: string, data: Partial<IResource>) {
-    return await ResourceModel.findByIdAndUpdate(id, data, { new: true });
+    const schema = [["name"], ["shortDescription"]];
+    const input = { name: data.name, shortDescription: data.shortDescription };
+    const translations = new Map<string, IResourceTranslation>();
+    const translationResults = await Promise.all(
+      Config.SUPPORTED_LANGUAGES.map(async (lang) => {
+        const result = await this.translationService.translateJsonStructure(
+          input,
+          schema,
+          lang
+        );
+        return { lang, result };
+      })
+    );
+    translationResults.forEach(({ lang, result }) => {
+      translations.set(lang, result);
+    });
+    return await ResourceModel.findByIdAndUpdate(
+      id,
+      {
+        ...data,
+        translations,
+      },
+      { new: true }
+    );
   }
 
   async deleteResource(id: string) {
@@ -46,9 +136,7 @@ class ResourceService {
   }
 
   async getAllResources() {
-    return await ResourceModel.find()
-      .populate("categoryId", "name description icon")
-      .sort({ createdAt: -1 });
+    return await ResourceModel.find().populate("categoryId").sort({ createdAt: -1 });
   }
 
   async getResources({
@@ -74,7 +162,7 @@ class ResourceService {
     }
 
     const resources = await ResourceModel.find(filter)
-      .populate("categoryId", "name _id icon description")
+      .populate("categoryId")
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
@@ -85,7 +173,7 @@ class ResourceService {
   }
 
   async getResourcesByCategory(categoryId: string) {
-    return await ResourceModel.find({ categoryId }).populate("categoryId", "name");
+    return await ResourceModel.find({ categoryId }).populate("categoryId");
   }
 }
 
