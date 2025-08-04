@@ -34,7 +34,16 @@ export interface ILevel {
   from: number;
   to: number;
 }
-
+export interface ITranslation {
+  name: string;
+  description?: string;
+  overview?: string;
+  purpose?: string;
+  duration?: string;
+  benefits?: string[];
+  // questions: IQuestion[]; // only translate question text and options. remaing same.
+  // interpretations: ILevel[];
+}
 export interface IScreening extends Document {
   name: string;
   slug: string;
@@ -49,7 +58,22 @@ export interface IScreening extends Document {
   interpretations: ILevel[];
   createdAt: Date;
   updatedAt: Date;
+
+  translations: Map<string, ITranslation>;
+
+  getFieldsToTranslate(): string[];
 }
+
+const TranslationSchema = new Schema<ITranslation>({
+  name: { type: String, required: true },
+  description: { type: String },
+  overview: { type: String },
+  purpose: { type: String },
+  duration: { type: String },
+  benefits: { type: [String] },
+  // questions: { type: [Schema.Types.Mixed], required: true },
+  // interpretations: { type: [Schema.Types.Mixed], required: true },
+});
 
 const ScreeningSchema: Schema = new Schema(
   {
@@ -162,6 +186,11 @@ const ScreeningSchema: Schema = new Schema(
     imageURL: {
       type: String,
     },
+    translations: {
+      type: Map,
+      of: TranslationSchema,
+      default: new Map(),
+    },
   },
   {
     timestamps: true,
@@ -169,6 +198,19 @@ const ScreeningSchema: Schema = new Schema(
     toObject: { virtuals: true },
   }
 );
+
+ScreeningSchema.methods.getFieldsToTranslate = function (): string[] {
+  return [
+    "name",
+    "description",
+    "overview",
+    "purpose",
+    "duration",
+    "benefits",
+    "questions",
+    "interpretations",
+  ];
+};
 
 ScreeningSchema.index({ slug: 1, status: 1 });
 const Screening = mongoose.model<IScreening>("Screening", ScreeningSchema);

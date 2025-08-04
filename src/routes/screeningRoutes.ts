@@ -9,10 +9,12 @@ import ScreeningService from "../services/ScreeningService";
 import ScreeningController from "../controllers/ScreeningController";
 import ScreeningSubmissionService from "../services/ScreeningSubmissonService";
 import { AuthRequest } from "../types";
+import { TranslationService } from "../services/TranslationService";
 
 const screeningRouter = Router();
 const storage = new CloudinaryStorageService();
-const screeningService = new ScreeningService();
+const translationService = new TranslationService();
+const screeningService = new ScreeningService(translationService);
 const screeningSubmissionService = new ScreeningSubmissionService();
 
 const screeningController = new ScreeningController(
