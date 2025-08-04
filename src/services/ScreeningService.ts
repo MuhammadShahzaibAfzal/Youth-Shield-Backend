@@ -7,13 +7,23 @@ class ScreeningService {
   async createScreening(data: Partial<IScreening>) {
     const screening = await Screening.create(data);
 
-    const schema = [["name"], ["overview"], ["purpose"], ["duration"], ["benefits", "*"]];
+    const schema = [
+      ["name"],
+      ["overview"],
+      ["purpose"],
+      ["duration"],
+      ["benefits", "*", "name"],
+    ];
     const input = {
       name: data.name,
       overview: data.overview,
       purpose: data.purpose,
       duration: data.duration,
-      benefits: data.benefits,
+      benefits: data.benefits?.map((b) => {
+        return {
+          name: b,
+        };
+      }),
     };
 
     const translations = new Map<string, ITranslation>();
@@ -29,7 +39,14 @@ class ScreeningService {
     );
 
     translationResults.forEach(({ lang, result }) => {
-      translations.set(lang, result);
+      const formatedResult = {
+        name: result.name,
+        overview: result.overview,
+        purpose: result.purpose,
+        duration: result.duration,
+        benefits: result.benefits?.map((b: any) => b.name),
+      };
+      translations.set(lang, formatedResult);
     });
     // console.log("translations", translations);
 
@@ -42,7 +59,58 @@ class ScreeningService {
     id: string,
     data: Partial<IScreening>
   ): Promise<IScreening | null> {
-    return await Screening.findByIdAndUpdate(id, data, { new: true });
+    // TODO: ONLY TRANSLATE UPDATE VALUE AND ADD QUESTIONS and INTERPRETATIONS
+    const schema = [
+      ["name"],
+      ["overview"],
+      ["purpose"],
+      ["duration"],
+      ["benefits", "*", "name"],
+    ];
+
+    const input = {
+      name: data.name,
+      overview: data.overview,
+      purpose: data.purpose,
+      duration: data.duration,
+      benefits: data?.benefits?.map((b) => {
+        return {
+          name: b,
+        };
+      }),
+    };
+
+    const translations = new Map<string, ITranslation>();
+    const translationResults = await Promise.all(
+      Config.SUPPORTED_LANGUAGES.map(async (lang) => {
+        const result = await this.translationService.translateJsonStructure(
+          input,
+          schema,
+          lang
+        );
+        return { lang, result };
+      })
+    );
+
+    translationResults.forEach(({ lang, result }) => {
+      const formatedResult = {
+        name: result.name,
+        overview: result.overview,
+        purpose: result.purpose,
+        duration: result.duration,
+        benefits: result.benefits?.map((b: any) => b.name),
+      };
+      translations.set(lang, formatedResult);
+    });
+
+    return await Screening.findByIdAndUpdate(
+      id,
+      {
+        ...data,
+        translations,
+      },
+      { new: true }
+    );
   }
 
   async deleteScreening(id: string) {
