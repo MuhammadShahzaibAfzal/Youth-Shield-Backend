@@ -3,16 +3,63 @@ import {
   IndepCategoryModel,
   IIndepResource,
   IIndepCategory,
+  IResourceTranslationCategory,
+  IResourceTranslation,
 } from "../models/IndepResourcesModel";
 import mongoose from "mongoose";
+import { TranslationService } from "./TranslationService";
+import Config from "../config";
 
 class IndependentResourceService {
+  constructor(private translationService: TranslationService) {}
   async createCategory(data: Partial<IIndepCategory>) {
-    return await IndepCategoryModel.create(data);
+    const schema = [["name"], ["description"]];
+    const input = { name: data.name, description: data.description };
+    const translations = new Map<string, IResourceTranslationCategory>();
+    const translationResults = await Promise.all(
+      Config.SUPPORTED_LANGUAGES.map(async (lang) => {
+        const result = await this.translationService.translateJsonStructure(
+          input,
+          schema,
+          lang
+        );
+        return { lang, result };
+      })
+    );
+    translationResults.forEach(({ lang, result }) => {
+      translations.set(lang, result);
+    });
+    return await IndepCategoryModel.create({
+      ...data,
+      translations,
+    });
   }
 
   async updateCategory(id: string, data: Partial<IIndepCategory>) {
-    return await IndepCategoryModel.findByIdAndUpdate(id, data, { new: true });
+    const schema = [["name"], ["description"]];
+    const input = { name: data.name, description: data.description };
+    const translations = new Map<string, IResourceTranslationCategory>();
+    const translationResults = await Promise.all(
+      Config.SUPPORTED_LANGUAGES.map(async (lang) => {
+        const result = await this.translationService.translateJsonStructure(
+          input,
+          schema,
+          lang
+        );
+        return { lang, result };
+      })
+    );
+    translationResults.forEach(({ lang, result }) => {
+      translations.set(lang, result);
+    });
+    return await IndepCategoryModel.findByIdAndUpdate(
+      id,
+      {
+        ...data,
+        translations,
+      },
+      { new: true }
+    );
   }
 
   async deleteCategory(id: string) {
@@ -30,11 +77,53 @@ class IndependentResourceService {
   }
 
   async createResource(data: Partial<IIndepResource>) {
-    return await IndepResourceModel.create(data);
+    const schema = [["name"], ["shortDescription"]];
+    const input = { name: data.name, shortDescription: data.shortDescription };
+    const translations = new Map<string, IResourceTranslation>();
+    const translationResults = await Promise.all(
+      Config.SUPPORTED_LANGUAGES.map(async (lang) => {
+        const result = await this.translationService.translateJsonStructure(
+          input,
+          schema,
+          lang
+        );
+        return { lang, result };
+      })
+    );
+    translationResults.forEach(({ lang, result }) => {
+      translations.set(lang, result);
+    });
+    return await IndepResourceModel.create({
+      ...data,
+      translations,
+    });
   }
 
   async updateResource(id: string, data: Partial<IIndepResource>) {
-    return await IndepResourceModel.findByIdAndUpdate(id, data, { new: true });
+    const schema = [["name"], ["shortDescription"]];
+    const input = { name: data.name, shortDescription: data.shortDescription };
+    const translations = new Map<string, IResourceTranslation>();
+    const translationResults = await Promise.all(
+      Config.SUPPORTED_LANGUAGES.map(async (lang) => {
+        const result = await this.translationService.translateJsonStructure(
+          input,
+          schema,
+          lang
+        );
+        return { lang, result };
+      })
+    );
+    translationResults.forEach(({ lang, result }) => {
+      translations.set(lang, result);
+    });
+    return await IndepResourceModel.findByIdAndUpdate(
+      id,
+      {
+        ...data,
+        translations,
+      },
+      { new: true }
+    );
   }
 
   async deleteResource(id: string) {

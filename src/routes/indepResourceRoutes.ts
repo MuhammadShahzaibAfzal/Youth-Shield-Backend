@@ -6,10 +6,12 @@ import { canAccess } from "../middlewares/canAccess";
 import IndependentResourceService from "../services/IndepResourceService";
 import CloudinaryStorageService from "../services/CloudinaryService";
 import IndependentResourcesController from "../controllers/IndepResourceController";
+import { TranslationService } from "../services/TranslationService";
 
 const independentResourceRouter = Router();
 const storage = new CloudinaryStorageService();
-const resourceService = new IndependentResourceService();
+const translationService = new TranslationService();
+const resourceService = new IndependentResourceService(translationService);
 const resourceController = new IndependentResourcesController(storage, resourceService);
 
 //
