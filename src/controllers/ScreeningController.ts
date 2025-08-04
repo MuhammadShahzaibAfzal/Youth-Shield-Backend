@@ -94,6 +94,7 @@ class ScreeningController {
       res.status(200).json({
         ...screening.toObject(),
         isAlreadySubmitted,
+        translations: screening?.translations,
       });
     } catch (error) {
       next(error);

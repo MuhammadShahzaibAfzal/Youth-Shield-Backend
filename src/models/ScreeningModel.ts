@@ -34,14 +34,30 @@ export interface ILevel {
   from: number;
   to: number;
 }
+
+export interface ITranslatedQuestion {
+  _id: string;
+  text: string;
+  options?: Array<{
+    _id: string;
+    text: string;
+  }>;
+}
+
+export interface ITranslatedLevel {
+  _id: string;
+  name: string;
+  proposedSolution: string;
+}
+
 export interface ITranslation {
   name: string;
   overview?: string;
   purpose?: string;
   duration?: string;
   benefits?: string[];
-  // questions: IQuestion[]; // only translate question text and options. remaing same.
-  // interpretations: ILevel[];
+  questions?: ITranslatedQuestion[];
+  interpretations?: ITranslatedLevel[];
 }
 export interface IScreening extends Document {
   name: string;
@@ -63,16 +79,34 @@ export interface IScreening extends Document {
   getFieldsToTranslate(): string[];
 }
 
+const TranslatedQuestionSchema = new Schema<ITranslatedQuestion>({
+  _id: { type: String, required: true },
+  text: { type: String, required: true },
+  options: {
+    type: [
+      {
+        _id: { type: String, required: true },
+        text: { type: String, required: true },
+      },
+    ],
+    required: false,
+  },
+});
+
+const TranslatedLevelSchema = new Schema<ITranslatedLevel>({
+  _id: { type: String, required: true },
+  name: { type: String, required: true },
+  proposedSolution: { type: String, required: true },
+});
+
 const TranslationSchema = new Schema<ITranslation>({
   name: { type: String, required: true },
   overview: { type: String },
   purpose: { type: String },
   duration: { type: String },
   benefits: { type: [String] },
-  // // @ts-ignore
-  // questions: { type: [Schema.Types.Mixed], required: false },
-  // // @ts-ignore
-  // interpretations: { type: [Schema.Types.Mixed], required: false },
+  questions: { type: [TranslatedQuestionSchema] },
+  interpretations: { type: [TranslatedLevelSchema] },
 });
 
 const ScreeningSchema: Schema = new Schema(

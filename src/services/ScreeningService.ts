@@ -66,6 +66,10 @@ class ScreeningService {
       ["purpose"],
       ["duration"],
       ["benefits", "*", "name"],
+      ["questions", "*", "text"],
+      ["questions", "*", "options", "*", "text"],
+      ["interpretations", "*", "name"],
+      ["interpretations", "*", "proposedSolution"],
     ];
 
     const input = {
@@ -76,6 +80,23 @@ class ScreeningService {
       benefits: data?.benefits?.map((b) => {
         return {
           name: b,
+        };
+      }),
+      questions: data?.questions?.map((q) => {
+        return {
+          text: q.text,
+          options:
+            q.options?.map((o) => {
+              return {
+                text: o.text,
+              };
+            }) || [],
+        };
+      }),
+      interpretations: data?.interpretations?.map((i) => {
+        return {
+          name: i.name,
+          proposedSolution: i.proposedSolution,
         };
       }),
     };
@@ -99,6 +120,29 @@ class ScreeningService {
         purpose: result.purpose,
         duration: result.duration,
         benefits: result.benefits?.map((b: any) => b.name),
+        questions: result.questions?.map((q: any, index: number) => {
+          const selectedQuestion = data.questions?.[index];
+
+          return {
+            _id: selectedQuestion?._id,
+            text: q.text,
+            options: q.options?.map((o: any, index: number) => {
+              const selectedOption = selectedQuestion?.options?.[index];
+              return {
+                text: o.text,
+                _id: selectedOption?._id,
+              };
+            }),
+          };
+        }),
+        interpretations: result.interpretations?.map((i: any, index: any) => {
+          const selectedInterpretation = data.interpretations?.[index];
+          return {
+            name: i.name,
+            proposedSolution: i.proposedSolution,
+            _id: selectedInterpretation?._id,
+          };
+        }),
       };
       translations.set(lang, formatedResult);
     });
