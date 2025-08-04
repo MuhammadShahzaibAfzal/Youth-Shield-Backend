@@ -1,14 +1,8 @@
 import { ITranslationProvider, ITranslatable } from "../types/translation";
 import { GoogleTranslationProvider } from "../providers/GoogleTranslationProvider";
-import { IScreening, ITranslation } from "../models/ScreeningModel";
 
-type TranslatableText = {
-  path: string[]; // Path to the field in the object
-  text: string; // Text to translate
-};
-type TranslationMap = {
-  [path: string]: string; // Map of paths to translated texts
-};
+type Path = string[]; // e.g. ['questions', '0', 'text']
+type TranslationItem = { path: Path; text: string };
 
 export class TranslationService {
   private provider: ITranslationProvider;
@@ -53,187 +47,75 @@ export class TranslationService {
     return result.text;
   }
 
-  // SCREENING TRANSLATIONS LOGIC
-  private async collectTextsFromScreening(
-    screening: IScreening
-  ): Promise<TranslatableText[]> {
-    const texts: TranslatableText[] = [];
-    const fields = screening.getFieldsToTranslate();
+  collectPathsToTranslate(obj: any, schema: Path[], currentPath: Path = []): any {
+    const result: TranslationItem[] = [];
 
-    // Helper function to add text with path
-    const addText = (text: string, ...path: string[]) => {
-      if (text && typeof text === "string") {
-        texts.push({ path, text });
-      }
-    };
-
-    // Simple fields
-    if (fields.includes("name")) addText(screening.name, "name");
-    if (fields.includes("description"))
-      addText(screening.description || "", "description");
-    if (fields.includes("overview")) addText(screening.overview || "", "overview");
-    if (fields.includes("purpose")) addText(screening.purpose || "", "purpose");
-    if (fields.includes("duration")) addText(screening.duration || "", "duration");
-
-    // Benefits array
-    if (fields.includes("benefits") && screening.benefits) {
-      screening.benefits.forEach((benefit, i) => {
-        addText(benefit, "benefits", i.toString());
-      });
+    for (const path of schema) {
+      const fullPath = [...currentPath, ...path];
+      this.collectFromPath(obj, fullPath, [], result);
     }
 
-    // Questions
-    if (fields.includes("questions") && screening.questions) {
-      screening.questions.forEach((question, qIndex) => {
-        addText(question.text, "questions", qIndex.toString(), "text");
-
-        // Question options
-        if (question.options) {
-          question.options.forEach((option, oIndex) => {
-            addText(
-              option.text,
-              "questions",
-              qIndex.toString(),
-              "options",
-              oIndex.toString(),
-              "text"
-            );
-          });
-        }
-
-        // Height options
-        if (question.heightOptions) {
-          question.heightOptions.forEach((heightOption, hIndex) => {
-            addText(
-              heightOption.height,
-              "questions",
-              qIndex.toString(),
-              "heightOptions",
-              hIndex.toString(),
-              "height"
-            );
-
-            // Weights
-            if (heightOption.weights) {
-              heightOption.weights.forEach((weightOption, wIndex) => {
-                addText(
-                  weightOption.weight,
-                  "questions",
-                  qIndex.toString(),
-                  "heightOptions",
-                  hIndex.toString(),
-                  "weights",
-                  wIndex.toString(),
-                  "weight"
-                );
-              });
-            }
-          });
-        }
-      });
-    }
-
-    // Interpretations
-    if (fields.includes("interpretations") && screening.interpretations) {
-      screening.interpretations.forEach((level, lIndex) => {
-        addText(level.name, "interpretations", lIndex.toString(), "name");
-        addText(
-          level.proposedSolution,
-          "interpretations",
-          lIndex.toString(),
-          "proposedSolution"
-        );
-      });
-    }
-
-    return texts;
+    return result;
   }
 
-  private applyTranslations(
-    screening: IScreening,
-    translations: TranslationMap
-  ): IScreening["translations"] {
-    const translatedScreening = JSON.parse(
-      JSON.stringify(screening)
-    ) as Partial<IScreening>;
-    const translatedFields: Partial<ITranslation> = {};
+  async collectFromPath(obj: any, path: Path, current: Path, result: TranslationItem[]) {
+    if (!obj) return;
 
-    Object.entries(translations).forEach(([path, translatedText]) => {
-      const pathParts = path.split(".");
-      let current: any = translatedFields;
+    const [head, ...tail] = path;
 
-      // Navigate through the path to set the translated value
-      for (let i = 0; i < pathParts.length - 1; i++) {
-        const part = pathParts[i];
-        current[part] = current[part] || (isNaN(Number(pathParts[i + 1])) ? {} : []);
-        current = current[part];
+    if (head === "*") {
+      if (Array.isArray(obj)) {
+        for (let i = 0; i < obj.length; i++) {
+          this.collectFromPath(obj[i], tail, [...current, i.toString()], result);
+        }
       }
-
-      current[pathParts[pathParts.length - 1]] = translatedText;
-    });
-
-    return translatedFields as IScreening["translations"];
+    } else if (tail.length === 0) {
+      const value = obj[head];
+      if (typeof value === "string") {
+        result.push({ path: [...current, head], text: value });
+      }
+    } else {
+      this.collectFromPath(obj[head], tail, [...current, head], result);
+    }
   }
 
-  async translateScreening(
-    screening: IScreening,
+  async setValueAtPath(obj: any, path: Path, value: string) {
+    let current = obj;
+    for (let i = 0; i < path.length - 1; i++) {
+      const key = path[i];
+      current[key] = current[key] || {};
+      current = current[key];
+    }
+    current[path[path.length - 1]] = value;
+  }
+
+  async translateJsonStructure(
+    input: any,
+    schema: Path[],
     targetLanguage: string,
     sourceLanguage?: string
-  ): Promise<IScreening["translations"]> {
-    // Step 1: Collect all texts to translate with their paths
-    const translatableTexts = await this.collectTextsFromScreening(screening);
-
-    // Step 2: Batch translate all texts at once
-    const textsToTranslate = translatableTexts.map((item) => item.text);
-    const translationResults = await this.provider.translateBatch(
-      textsToTranslate,
+  ): Promise<any> {
+    // console.log("INPUT : ", input);
+    // console.log("Schema : ", schema);
+    const clone = JSON.parse(JSON.stringify(input));
+    // console.log("Clone : ", clone);
+    const pathsToTranslate = this.collectPathsToTranslate(input, schema);
+    // console.log("PathsToTranslate : ", pathsToTranslate);
+    const texts = pathsToTranslate.map((item: any) => item.text);
+    // console.log("Texts : ", texts);
+    const translated = await this.provider.translateBatch(
+      texts,
       targetLanguage,
       sourceLanguage
     );
+    // console.log("Translated Texts : ", translated);
 
-    // Step 3: Create a map of paths to translated texts
-    const translationsMap: TranslationMap = {};
-    translatableTexts.forEach((item, index) => {
-      translationsMap[item.path.join(".")] = translationResults[index].text;
+    pathsToTranslate.forEach((item: any, i: number) => {
+      this.setValueAtPath(clone, item.path, translated[i].text);
     });
 
-    // Step 4: Apply translations to create the translated structure
-    return this.applyTranslations(screening, translationsMap);
-  }
+    // console.log("Clone : ", clone);
 
-  async translateScreeningFields(
-    screening: IScreening,
-    fieldsToTranslate: string[],
-    targetLanguages: string[],
-    sourceLanguage: string = "en"
-  ): Promise<Partial<IScreening["translations"]>> {
-    const allTexts = await this.collectTextsFromScreening(screening);
-
-    const relevantTexts = allTexts.filter((item) =>
-      fieldsToTranslate.some((field) => item.path[0] === field)
-    );
-
-    const translationsByLang: Record<string, any> = {};
-
-    for (const lang of targetLanguages) {
-      const existingTranslation = screening.translations?.get(lang);
-      const needsTranslation = !existingTranslation;
-
-      const batchTexts = relevantTexts.map((item) => item.text);
-      const translatedResults = await this.provider.translateBatch(
-        batchTexts,
-        lang,
-        sourceLanguage
-      );
-
-      const translationMap: TranslationMap = {};
-      relevantTexts.forEach((item, index) => {
-        translationMap[item.path.join(".")] = translatedResults[index].text;
-      });
-
-      translationsByLang[lang] = this.applyTranslations(screening, translationMap);
-    }
-
-    return translationsByLang;
+    return clone;
   }
 }

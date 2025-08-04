@@ -36,7 +36,6 @@ export interface ILevel {
 }
 export interface ITranslation {
   name: string;
-  description?: string;
   overview?: string;
   purpose?: string;
   duration?: string;
@@ -66,13 +65,14 @@ export interface IScreening extends Document {
 
 const TranslationSchema = new Schema<ITranslation>({
   name: { type: String, required: true },
-  description: { type: String },
   overview: { type: String },
   purpose: { type: String },
   duration: { type: String },
   benefits: { type: [String] },
-  // questions: { type: [Schema.Types.Mixed], required: true },
-  // interpretations: { type: [Schema.Types.Mixed], required: true },
+  // // @ts-ignore
+  // questions: { type: [Schema.Types.Mixed], required: false },
+  // // @ts-ignore
+  // interpretations: { type: [Schema.Types.Mixed], required: false },
 });
 
 const ScreeningSchema: Schema = new Schema(
