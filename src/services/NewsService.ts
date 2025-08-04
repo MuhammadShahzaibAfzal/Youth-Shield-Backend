@@ -1,15 +1,92 @@
-import News, { INews } from "../models/NewsModel";
+import News, { INews, INewsTranslation } from "../models/NewsModel";
 import Category from "../models/CategoryModel";
 import Screening from "../models/ScreeningModel";
 import Event from "../models/EventModel";
+import { TranslationService } from "./TranslationService";
+import Config from "../config";
 
 class NewsService {
+  constructor(private translationService: TranslationService) {}
   async createNews(data: Partial<INews>) {
-    return await News.create(data);
+    const schema = [
+      ["title"],
+      ["content"],
+      ["shortDescription"],
+      ["SEO", "metaTitle"],
+      ["SEO", "metaDescription"],
+    ];
+    const input = {
+      title: data.title,
+      content: data.content,
+      shortDescription: data.shortDescription,
+      SEO: {
+        metaTitle: data?.SEO?.metaTitle || data.title,
+        metaDescription: data?.SEO?.metaDescription || data.shortDescription,
+      },
+    };
+
+    const translations = new Map<string, INewsTranslation>();
+    const translationResults = await Promise.all(
+      Config.SUPPORTED_LANGUAGES.map(async (lang) => {
+        const result = await this.translationService.translateJsonStructure(
+          input,
+          schema,
+          lang
+        );
+        return { lang, result };
+      })
+    );
+
+    translationResults.forEach(({ lang, result }) => {
+      translations.set(lang, result);
+    });
+    return await News.create({
+      ...data,
+      translations,
+    });
   }
 
   async updateNews(id: string, data: Partial<INews>) {
-    return await News.findByIdAndUpdate(id, data, { new: true });
+    const schema = [
+      ["title"],
+      ["content"],
+      ["shortDescription"],
+      ["SEO", "metaTitle"],
+      ["SEO", "metaDescription"],
+    ];
+    const input = {
+      title: data.title,
+      content: data.content,
+      shortDescription: data.shortDescription,
+      SEO: {
+        metaTitle: data?.SEO?.metaTitle || data.title,
+        metaDescription: data?.SEO?.metaDescription || data.shortDescription,
+      },
+    };
+
+    const translations = new Map<string, INewsTranslation>();
+    const translationResults = await Promise.all(
+      Config.SUPPORTED_LANGUAGES.map(async (lang) => {
+        const result = await this.translationService.translateJsonStructure(
+          input,
+          schema,
+          lang
+        );
+        return { lang, result };
+      })
+    );
+
+    translationResults.forEach(({ lang, result }) => {
+      translations.set(lang, result);
+    });
+    return await News.findByIdAndUpdate(
+      id,
+      {
+        ...data,
+        translations,
+      },
+      { new: true }
+    );
   }
 
   async deleteNews(id: string) {

@@ -11,8 +11,8 @@ import { TranslationService } from "../services/TranslationService";
 
 const newsRouter = Router();
 const storage = new CloudinaryStorageService();
-const newsService = new NewsService();
 const translationService = new TranslationService();
+const newsService = new NewsService(translationService);
 const categoryService = new CategoryService(translationService);
 const newsController = new NewsController(storage, newsService, categoryService);
 
