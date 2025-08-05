@@ -1,13 +1,88 @@
-import Event, { IEvent } from "../models/EventModel";
+import Config from "../config";
+import Event, { IEvent, IEventTranslation } from "../models/EventModel";
 import Registration from "../models/RegistrationModel";
+import { TranslationService } from "./TranslationService";
 
 class EventService {
+  constructor(private translationService: TranslationService) {}
   async createEvent(data: Partial<IEvent>) {
-    return await Event.create(data);
+    const schema = [
+      ["title"],
+      ["content"],
+      ["summary"],
+      ["SEO", "metaTitle"],
+      ["SEO", "metaDescription"],
+    ];
+    const input = {
+      title: data.title,
+      content: data.content,
+      summary: data.summary,
+      SEO: {
+        metaTitle: data?.SEO?.metaTitle || data.title,
+        metaDescription: data?.SEO?.metaDescription || data.summary,
+      },
+    };
+    const translations = new Map<string, IEventTranslation>();
+    const translationResults = await Promise.all(
+      Config.SUPPORTED_LANGUAGES.map(async (lang) => {
+        const result = await this.translationService.translateJsonStructure(
+          input,
+          schema,
+          lang
+        );
+        return { lang, result };
+      })
+    );
+
+    translationResults.forEach(({ lang, result }) => {
+      translations.set(lang, result);
+    });
+    return await Event.create({
+      ...data,
+      translations,
+    });
   }
 
   async updateEvent(id: string, data: Partial<IEvent>) {
-    return await Event.findByIdAndUpdate(id, data, { new: true });
+    const schema = [
+      ["title"],
+      ["content"],
+      ["summary"],
+      ["SEO", "metaTitle"],
+      ["SEO", "metaDescription"],
+    ];
+    const input = {
+      title: data.title,
+      content: data.content,
+      summary: data.summary,
+      SEO: {
+        metaTitle: data?.SEO?.metaTitle || data.title,
+        metaDescription: data?.SEO?.metaDescription || data.summary,
+      },
+    };
+    const translations = new Map<string, IEventTranslation>();
+    const translationResults = await Promise.all(
+      Config.SUPPORTED_LANGUAGES.map(async (lang) => {
+        const result = await this.translationService.translateJsonStructure(
+          input,
+          schema,
+          lang
+        );
+        return { lang, result };
+      })
+    );
+
+    translationResults.forEach(({ lang, result }) => {
+      translations.set(lang, result);
+    });
+    return await Event.findByIdAndUpdate(
+      id,
+      {
+        ...data,
+        translations,
+      },
+      { new: true }
+    );
   }
 
   async deleteEvent(id: string) {

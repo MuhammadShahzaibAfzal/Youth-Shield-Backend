@@ -6,10 +6,12 @@ import asyncHandler from "../utils/asyncHandler";
 import authenticate from "../middlewares/authenticate";
 import { canAccess } from "../middlewares/canAccess";
 import EventService from "../services/EventService";
+import { TranslationService } from "../services/TranslationService";
 
 const eventRouter = Router();
 const storage = new CloudinaryStorageService();
-const eventService = new EventService();
+const translationService = new TranslationService();
+const eventService = new EventService(translationService);
 const eventController = new EventController(storage, eventService);
 
 // Create new event (admin only)

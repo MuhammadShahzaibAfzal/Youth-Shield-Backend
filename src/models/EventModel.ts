@@ -1,9 +1,21 @@
 import mongoose, { Document } from "mongoose";
 
+export interface ITranslateSEO {
+  metaTitle: string;
+  metaDescription: string;
+}
+
 export interface IEventSEO {
   metaTitle: string;
   slug: string;
   metaDescription: string;
+}
+
+export interface IEventTranslation {
+  title: string;
+  content?: string;
+  summary?: string;
+  SEO: ITranslateSEO;
 }
 
 export interface IEvent extends Document {
@@ -22,6 +34,8 @@ export interface IEvent extends Document {
   createdAt: Date;
   updatedAt: Date;
   SEO: IEventSEO;
+
+  translations: Map<string, IEventTranslation>;
 }
 
 const eventSchema = new mongoose.Schema<IEvent>(
@@ -41,6 +55,20 @@ const eventSchema = new mongoose.Schema<IEvent>(
       metaTitle: { type: String, required: false },
       slug: { type: String, required: false },
       metaDescription: { type: String, required: false },
+    },
+
+    translations: {
+      type: Map,
+      of: {
+        title: { type: String, required: true },
+        content: { type: String, required: false },
+        summary: { type: String, required: false },
+        SEO: {
+          metaTitle: { type: String, required: false },
+          metaDescription: { type: String, required: false },
+        },
+      },
+      default: new Map(),
     },
   },
   {
