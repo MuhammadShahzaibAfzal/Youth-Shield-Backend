@@ -14,6 +14,19 @@ export interface IQuestion {
   order: number;
 }
 
+export interface ITranslatedQuestion {
+  _id: string;
+  text: string;
+  options?: Array<{
+    _id: string;
+    text: string;
+  }>;
+}
+export interface ITranslation {
+  name: string;
+  description: string;
+  questions?: ITranslatedQuestion[];
+}
 export interface IContest extends Document {
   name: string;
   slug: string;
@@ -29,7 +42,22 @@ export interface IContest extends Document {
   averageScore: number;
   createdAt: Date;
   updatedAt: Date;
+  translations: Map<string, ITranslation>;
 }
+
+const TranslatedQuestionSchema = new Schema<ITranslatedQuestion>({
+  _id: { type: String, required: true },
+  text: { type: String, required: true },
+  options: {
+    type: [
+      {
+        _id: { type: String, required: true },
+        text: { type: String, required: true },
+      },
+    ],
+    required: false,
+  },
+});
 
 const ContestSchema: Schema = new Schema<IContest>(
   {
@@ -106,6 +134,19 @@ const ContestSchema: Schema = new Schema<IContest>(
     averageScore: {
       type: Number,
       default: 0,
+    },
+
+    translations: {
+      type: Map,
+      of: {
+        name: { type: String, required: true },
+        description: { type: String, required: false },
+        questions: {
+          type: [TranslatedQuestionSchema],
+          required: false,
+        },
+      },
+      default: new Map(),
     },
   },
   {

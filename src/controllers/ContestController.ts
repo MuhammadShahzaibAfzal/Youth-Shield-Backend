@@ -94,6 +94,7 @@ class ContestController {
       res.status(200).json({
         ...contest.toObject(),
         isAlreadySubmitted,
+        translations: contest?.translations,
       });
     } catch (error) {
       next(error);

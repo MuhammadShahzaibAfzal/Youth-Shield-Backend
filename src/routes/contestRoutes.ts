@@ -8,10 +8,12 @@ import ContestService from "../services/ContestService";
 import ContestController from "../controllers/ContestController";
 import ContestSubmissionService from "../services/ContestSubmissionService";
 import { AuthRequest } from "../types";
+import { TranslationService } from "../services/TranslationService";
 
 const contestRouter = Router();
 const storage = new CloudinaryStorageService();
-const contestService = new ContestService();
+const translationService = new TranslationService();
+const contestService = new ContestService(translationService);
 const contestSubmissionService = new ContestSubmissionService();
 const contestController = new ContestController(
   storage,
