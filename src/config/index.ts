@@ -44,7 +44,7 @@ const Config = {
   GOOGLE_PROJECT_ID,
   GOOGLE_APPLICATION_CREDENTIALS,
   GOOGLE_API_KEY,
-  SUPPORTED_LANGUAGES: ["de", "fr", "es"],
+  SUPPORTED_LANGUAGES: ["de", "fr", "es", "it", "hi", "zh"],
 };
 
 export default Config;
