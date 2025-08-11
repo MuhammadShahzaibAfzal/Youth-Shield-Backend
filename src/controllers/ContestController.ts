@@ -22,7 +22,7 @@ class ContestController {
         const imageName = uuidv4();
         imageURL = await this.storage.upload({
           fileName: imageName,
-          fileData: image.data.buffer,
+          fileData: image.data.buffer as any,
           contentType: image.mimetype,
         });
       }
@@ -47,6 +47,29 @@ class ContestController {
 
       const { contests, total } = await this.contestService.getAllContests({
         status: status as "active" | "inactive",
+        search: search as string,
+        limit: Number(limit),
+        skip,
+      });
+
+      res.status(200).json({
+        contests,
+        currentPage: Number(page),
+        totalPages: Math.ceil(total / Number(limit)),
+        limit: Number(limit),
+        total,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getUpcoming(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { search, limit = 10, page = 1 } = req.query;
+      const skip = (Number(page) - 1) * Number(limit);
+
+      const { contests, total } = await this.contestService.getUpcomingContests({
         search: search as string,
         limit: Number(limit),
         skip,
@@ -115,7 +138,7 @@ class ContestController {
         const imageName = uuidv4();
         imageURL = await this.storage.upload({
           fileName: imageName,
-          fileData: image.data.buffer,
+          fileData: image.data.buffer as any,
           contentType: image.mimetype,
         });
       }

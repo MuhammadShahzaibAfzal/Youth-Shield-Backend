@@ -55,6 +55,13 @@ contestRouter.get(
 );
 
 contestRouter.get(
+  "/upcoming",
+  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    await contestController.getUpcoming(req, res, next);
+  })
+);
+
+contestRouter.get(
   "/:id",
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     await contestController.getOne(req, res, next);

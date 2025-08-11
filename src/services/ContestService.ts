@@ -1,3 +1,4 @@
+import { endOfDay, format, startOfDay } from "date-fns";
 import Config from "../config";
 import Contest, { IContest, ITranslation } from "../models/ContestModel";
 import { TranslationService } from "./TranslationService";
@@ -129,6 +130,33 @@ class ContestService {
       .sort({ createdAt: -1 });
     const total = await Contest.countDocuments(filter);
 
+    return { contests, total };
+  }
+
+  async getUpcomingContests({ limit = 10, skip = 0, search } = {} as any) {
+    const now = new Date();
+    const start = startOfDay(now);
+    const end = endOfDay(now);
+
+    const baseMatch: any = { status: "active" };
+    if (search) {
+      baseMatch.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const filter = {
+      ...baseMatch,
+      $and: [{ fromDate: { $lte: end } }, { toDate: { $gte: start } }],
+    };
+
+    const contests = await Contest.find(filter)
+      .skip(skip)
+      .limit(limit)
+      .sort({ fromDate: 1 });
+
+    const total = await Contest.countDocuments(filter);
     return { contests, total };
   }
 
