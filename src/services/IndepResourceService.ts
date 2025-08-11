@@ -136,7 +136,7 @@ class IndependentResourceService {
 
   async getAllResources() {
     return await IndepResourceModel.find()
-      .populate("categoryId", "name description icon")
+      .populate("categoryId", "name description icon translations")
       .sort({ createdAt: -1 });
   }
 
@@ -163,7 +163,7 @@ class IndependentResourceService {
     }
 
     const resources = await IndepResourceModel.find(filter)
-      .populate("categoryId", "name _id icon description")
+      .populate("categoryId", "name _id icon description translations")
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
