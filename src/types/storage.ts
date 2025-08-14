@@ -1,6 +1,6 @@
 export interface FileData {
   fileName: string;
-  fileData: ArrayBuffer;
+  fileData: ArrayBufferLike;
   contentType?: string;
 }
 
