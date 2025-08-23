@@ -16,6 +16,7 @@ import screeningSubmissionRouter from "./routes/screeningSubmissionRoutes";
 import resourceRouter from "./routes/resourceRoutes";
 import independentResourceRouter from "./routes/indepResourceRoutes";
 import researchRegistrationRouter from "./routes/registerResearchRoutes";
+import anonymousScreeningSubmissionRouter from "./routes/anonymousScreeningSubmission";
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.use("/api/categories", categoryRouter);
 app.use("/api/news", newsRouter);
 app.use("/api/screenings", screeningRouter);
 app.use("/api/screening-submissions", screeningSubmissionRouter);
+app.use("/api/anonymous-screening-submissions", anonymousScreeningSubmissionRouter);
 app.use("/api/contests", contestRouter);
 app.use("/api/contest-submissions", contestSubmissionRouter);
 app.use("/api/leaderboard", leaderBoardRouter);

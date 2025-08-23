@@ -65,6 +65,14 @@ screeningRouter.get(
   })
 );
 
+screeningRouter.get(
+  "/anonymous/slug/:slug",
+  // authenticate,
+  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    await screeningController.getAnonymousBySlug(req as AuthRequest, res, next);
+  })
+);
+
 screeningRouter.put(
   "/:id",
   authenticate,

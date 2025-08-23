@@ -101,6 +101,23 @@ class ScreeningController {
     }
   }
 
+  async getAnonymousBySlug(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { slug } = req.params;
+      const screening = await this.screeningService.getScreeningBySlug(slug);
+      if (!screening) {
+        return next(createHttpError(404, "Screening not found"));
+      }
+
+      res.status(200).json({
+        ...screening.toObject(),
+        translations: screening?.translations,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async update(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     try {
