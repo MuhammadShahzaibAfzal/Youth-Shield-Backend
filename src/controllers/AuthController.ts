@@ -440,14 +440,61 @@ class AuthController {
     }
   }
 
+  async getSchools(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { query, limit = 10, page } = req.query;
+      const skip = (Number(page) - 1) * Number(limit);
+      const { schools, total } = await this.schoolService.getAdminSchools({
+        limit: Number(limit),
+        query: query as string,
+        skip,
+      });
+      return res.status(200).json({
+        schools,
+        currentPage: Number(page),
+        totalPages: Math.ceil(total / Number(limit)),
+        limit: Number(limit),
+        total: total,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async createSchool(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name } = req.body;
+      const { name, isApproved } = req.body;
 
       const school = await this.schoolService.create({
         name,
+        isApproved: isApproved,
       });
       return res.status(200).json(school);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateSchool(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, isApproved } = req.body;
+      const { id } = req.params;
+
+      const school = await this.schoolService.update(id, {
+        name,
+        isApproved: isApproved,
+      });
+      return res.status(200).json(school);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async changeStatusMany(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { ids, isApproved } = req.body;
+      const schools = await this.schoolService.changeStatusMany(ids, isApproved);
+      return res.status(200).json(schools);
     } catch (error) {
       next(error);
     }

@@ -21,6 +21,7 @@ import authenticate from "../middlewares/authenticate";
 import { AuthRequest } from "../types";
 import validateRefreshToken from "../middlewares/validateRefreshToken";
 import SchoolService from "../services/SchoolService";
+import { canAccess } from "../middlewares/canAccess";
 
 const authRouter = Router();
 
@@ -139,6 +140,33 @@ authRouter.post(
   "/schools",
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     await authController.createSchool(req, res, next);
+  })
+);
+
+authRouter.get(
+  "/admin/schools",
+  authenticate as RequestHandler,
+  canAccess(["admin"]),
+  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    await authController.getSchools(req, res, next);
+  })
+);
+
+authRouter.put(
+  "/admin/bulk-update",
+  authenticate as RequestHandler,
+  canAccess(["admin"]),
+  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    await authController.changeStatusMany(req, res, next);
+  })
+);
+
+authRouter.put(
+  "/admin/schools/:id",
+  authenticate as RequestHandler,
+  canAccess(["admin"]),
+  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    await authController.updateSchool(req, res, next);
   })
 );
 

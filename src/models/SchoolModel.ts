@@ -2,6 +2,7 @@ import mongoose, { Document, Model, Schema } from "mongoose";
 
 export interface ISchool extends Document {
   name: string;
+  isApproved: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -20,6 +21,10 @@ const schoolSchema: Schema<ISchool> = new Schema(
         },
         message: "School name must be between 2 and 100 characters",
       },
+    },
+    isApproved: {
+      type: Boolean,
+      default: false,
     },
   },
   {

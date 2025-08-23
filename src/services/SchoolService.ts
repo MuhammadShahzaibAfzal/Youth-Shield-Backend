@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import School, { ISchool } from "../models/SchoolModel";
 
 class SchoolService {
-  async findOrCreate(data: string | mongoose.Types.ObjectId) {
+  async findOrCreate(data: string | mongoose.Types.ObjectId, isApproved?: boolean) {
     // Case 1: If data is an ObjectId (existing school reference)
     if (mongoose.isValidObjectId(data)) {
       const school = await School.findById(data);
@@ -18,7 +18,7 @@ class SchoolService {
       let school = await School.findOne({ name: normalizedName });
 
       if (!school) {
-        school = await School.create({ name: normalizedName });
+        school = await School.create({ name: normalizedName, isApproved: isApproved });
       }
 
       return school;
@@ -28,14 +28,43 @@ class SchoolService {
   }
 
   async getSchools({ query, limit }: { query: string; limit: number }) {
-    const schools = await School.find({ name: { $regex: query, $options: "i" } }).limit(
-      limit
-    );
+    const schools = await School.find({
+      name: { $regex: query, $options: "i" },
+      isApproved: true,
+    }).limit(limit);
     return schools;
+  }
+
+  async getAdminSchools({
+    query = "",
+    limit,
+    skip,
+  }: {
+    query: string;
+    limit: number;
+    skip: number;
+  }) {
+    const schools = await School.find({ name: { $regex: query, $options: "i" } })
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+    const total = await School.countDocuments({ name: { $regex: query, $options: "i" } });
+    return {
+      schools,
+      total,
+    };
   }
 
   async create(data: Partial<ISchool>) {
     return await School.create(data);
+  }
+
+  async update(id: string, data: Partial<ISchool>) {
+    return await School.findByIdAndUpdate(id, data, { new: true });
+  }
+
+  async changeStatusMany(ids: string[], isApproved: boolean) {
+    return await School.updateMany({ _id: { $in: ids } }, { isApproved });
   }
 }
 
