@@ -10,9 +10,9 @@ class ScreeningSubmissionController {
   async createSubmission(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const userId = req?.auth?.sub || req?.auth?.id;
-      const { screeningId, totalScore } = req.body;
+      const { screeningId, totalScore, screeningAnswers } = req.body;
 
-      if (!screeningId || !userId || totalScore === undefined) {
+      if (!screeningId || !userId || totalScore === undefined || !screeningAnswers) {
         next(createHttpError(400, "Missing required fields"));
         return;
       }
@@ -31,6 +31,7 @@ class ScreeningSubmissionController {
         screening: screeningId,
         user: userId as string,
         totalScore,
+        screeningAnswers,
       });
 
       res.status(201).json(submission);

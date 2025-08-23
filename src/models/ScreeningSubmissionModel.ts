@@ -1,16 +1,39 @@
 import mongoose, { Document, Schema } from "mongoose";
 
+export interface IScreeningAnswer {
+  question: string;
+  answer: string;
+  score: number;
+}
+
 export interface IScreeningSubmission extends Document {
   screening: mongoose.Types.ObjectId | string;
   user: mongoose.Types.ObjectId | string;
   totalScore: number;
   submittedAt: Date;
+  screeningAnswers: IScreeningAnswer[];
 
   userDemographics: {
     country: string;
     school?: mongoose.Types.ObjectId | string;
   };
 }
+
+const ScreeningAnswerSchema: Schema = new Schema<IScreeningAnswer>({
+  question: {
+    type: String,
+    required: true,
+  },
+  answer: {
+    type: String,
+    required: true,
+  },
+  score: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+});
 
 const screeningSubmissionSchema: Schema = new Schema<IScreeningSubmission>(
   {
@@ -30,6 +53,7 @@ const screeningSubmissionSchema: Schema = new Schema<IScreeningSubmission>(
       type: Number,
       required: true,
     },
+    screeningAnswers: [ScreeningAnswerSchema],
     submittedAt: {
       type: Date,
       default: Date.now,

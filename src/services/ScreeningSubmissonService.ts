@@ -1,6 +1,7 @@
 import {
   ScreeningSubmission,
   IScreeningSubmission,
+  IScreeningAnswer,
 } from "../models/ScreeningSubmissionModel";
 import mongoose from "mongoose";
 import User from "../models/UserModel";
@@ -10,6 +11,7 @@ class ScreeningSubmissionService {
     screening: mongoose.Types.ObjectId | string;
     user: mongoose.Types.ObjectId | string;
     totalScore: number;
+    screeningAnswers: IScreeningAnswer[];
   }) {
     const user = await User.findById(data.user);
     if (!user) throw new Error("User not found");
@@ -21,6 +23,7 @@ class ScreeningSubmissionService {
         school: user.highSchool || "Unknown",
       },
       submittedAt: new Date(),
+      screeningAnswers: data.screeningAnswers,
     };
 
     return await ScreeningSubmission.create(submissionData);
@@ -73,7 +76,14 @@ class ScreeningSubmissionService {
       .skip(skip)
       .limit(limit)
       .sort({ totalScore: -1, submittedAt: 1 })
-      .populate("user", "firstName lastName")
+      .populate({
+        path: "user",
+        select: "firstName lastName imageURL gender email dob country highSchool",
+        populate: {
+          path: "highSchool",
+          select: "name _id",
+        },
+      })
       .populate("screening", "title slug");
 
     const total = await ScreeningSubmission.countDocuments(filter);

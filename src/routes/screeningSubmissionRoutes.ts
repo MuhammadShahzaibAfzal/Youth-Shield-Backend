@@ -38,7 +38,7 @@ screeningSubmissionRouter.get(
 screeningSubmissionRouter.get(
   "/",
   authenticate,
-  canAccess(["user", "admin", "ambassador"]),
+  canAccess(["admin"]),
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     await screeningSubmissionController.getAllSubmissions(req, res, next);
   })
@@ -48,7 +48,7 @@ screeningSubmissionRouter.get(
 screeningSubmissionRouter.put(
   "/:id",
   authenticate,
-  canAccess(["user", "admin", "ambassador"]),
+  canAccess(["admin"]),
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     await screeningSubmissionController.updateSubmission(req, res, next);
   })
@@ -58,7 +58,7 @@ screeningSubmissionRouter.put(
 screeningSubmissionRouter.delete(
   "/:id",
   authenticate,
-  canAccess(["user", "admin"]),
+  canAccess(["admin"]),
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     await screeningSubmissionController.deleteSubmission(req, res, next);
   })
