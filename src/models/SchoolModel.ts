@@ -24,7 +24,7 @@ const schoolSchema: Schema<ISchool> = new Schema(
     },
     isApproved: {
       type: Boolean,
-      default: false,
+      default: true,
     },
   },
   {
