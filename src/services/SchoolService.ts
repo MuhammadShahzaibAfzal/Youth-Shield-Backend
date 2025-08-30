@@ -31,6 +31,7 @@ class SchoolService {
     const schools = await School.find({
       name: { $regex: query, $options: "i" },
       isApproved: true,
+      $or: [{ isDeleted: false }, { isDeleted: { $exists: false } }],
     }).limit(limit);
     return schools;
   }
@@ -44,7 +45,10 @@ class SchoolService {
     limit: number;
     skip: number;
   }) {
-    const schools = await School.find({ name: { $regex: query, $options: "i" } })
+    const schools = await School.find({
+      name: { $regex: query, $options: "i" },
+      $or: [{ isDeleted: false }, { isDeleted: { $exists: false } }],
+    })
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });

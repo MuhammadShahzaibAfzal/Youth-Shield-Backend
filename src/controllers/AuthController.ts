@@ -463,11 +463,10 @@ class AuthController {
 
   async createSchool(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, isApproved } = req.body;
+      const { name } = req.body;
 
       const school = await this.schoolService.create({
         name,
-        isApproved: isApproved,
       });
       return res.status(200).json(school);
     } catch (error) {
@@ -477,12 +476,13 @@ class AuthController {
 
   async updateSchool(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, isApproved } = req.body;
+      const { name, isApproved, isDeleted } = req.body;
       const { id } = req.params;
 
       const school = await this.schoolService.update(id, {
         name,
         isApproved: isApproved,
+        isDeleted: isDeleted,
       });
       return res.status(200).json(school);
     } catch (error) {
