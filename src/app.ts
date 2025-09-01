@@ -17,6 +17,7 @@ import resourceRouter from "./routes/resourceRoutes";
 import independentResourceRouter from "./routes/indepResourceRoutes";
 import researchRegistrationRouter from "./routes/registerResearchRoutes";
 import anonymousScreeningSubmissionRouter from "./routes/anonymousScreeningSubmission";
+import newsLetterRouter from "./routes/newsletterRoutes";
 
 const app = express();
 
@@ -49,6 +50,7 @@ app.use("/api/registrations", registrationRouter);
 app.use("/api/resources", resourceRouter);
 app.use("/api/independent-research", independentResourceRouter);
 app.use("/api/research-registrations", researchRegistrationRouter);
+app.use("/api/news-letter", newsLetterRouter);
 
 app.use(globalErrorHandler);
 
