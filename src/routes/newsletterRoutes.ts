@@ -4,9 +4,11 @@ import NewsLetterController from "../controllers/NewsLetterController";
 import asyncHandler from "../utils/asyncHandler";
 import authenticate from "../middlewares/authenticate";
 import { canAccess } from "../middlewares/canAccess";
+import { NodeMailerNotificationService } from "../services/NodeMailerService";
 
 const newsLetterRouter = Router();
-const newsLetterService = new NewsLetterService();
+const mailService = new NodeMailerNotificationService();
+const newsLetterService = new NewsLetterService(mailService);
 const newsLetterController = new NewsLetterController(newsLetterService);
 
 // 📌 Public route - subscribe

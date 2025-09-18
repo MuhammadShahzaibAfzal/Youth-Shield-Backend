@@ -22,6 +22,7 @@ const {
   GOOGLE_PROJECT_ID,
   GOOGLE_APPLICATION_CREDENTIALS,
   GOOGLE_API_KEY,
+  ADMIN_EMAIL,
 } = process.env;
 
 const Config = {
@@ -45,6 +46,7 @@ const Config = {
   GOOGLE_APPLICATION_CREDENTIALS,
   GOOGLE_API_KEY,
   SUPPORTED_LANGUAGES: ["de", "fr", "es", "it", "hi", "zh"],
+  ADMIN_EMAIL,
 };
 
 export default Config;

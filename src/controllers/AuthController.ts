@@ -13,6 +13,7 @@ import { v4 as uuidv4 } from "uuid";
 import { IUser } from "../models/UserModel";
 import { FileStorage } from "../types/storage";
 import SchoolService from "../services/SchoolService";
+import { getAmbassadorTemplate } from "../utils/ambassadorTemplates";
 class AuthController {
   constructor(
     private userService: UserService,
@@ -157,6 +158,19 @@ class AuthController {
         countryCode,
       });
       logger.info("User has been registered", { id: user._id });
+      // ✅ Send admin email if ambassador
+      if (user.role === "ambassador") {
+        const { subject, html } = getAmbassadorTemplate(user);
+        try {
+          await this.mailService.send({
+            to: Config.ADMIN_EMAIL!,
+            subject,
+            html,
+          });
+        } catch (err) {
+          console.error("Failed to notify admin about ambassador:", err);
+        }
+      }
       // generate tokens
       const payload: JwtPayload = { sub: String(user.id), role: user.role };
       const accessToken = this.tokenService.generateAccessToken(payload);
