@@ -21,6 +21,7 @@ export class NodeMailerNotificationService implements MailNotificationService {
   }
 
   async send(message: Message): Promise<string | void> {
+    // console.log("MESSAGE: ", message);
     try {
       const mailOptions = {
         from: '"YouthShield" <support@youthshield.com>',

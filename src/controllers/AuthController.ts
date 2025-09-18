@@ -14,6 +14,8 @@ import { IUser } from "../models/UserModel";
 import { FileStorage } from "../types/storage";
 import SchoolService from "../services/SchoolService";
 import { getAmbassadorTemplate } from "../utils/ambassadorTemplates";
+import { getPasswordResetTemplate } from "../utils/getPasswordResetTemplate";
+import { getWelcomeTemplate } from "../utils/registerTemplate";
 class AuthController {
   constructor(
     private userService: UserService,
@@ -116,7 +118,7 @@ class AuthController {
   }
 
   async register(req: Request, res: Response, next: NextFunction) {
-    console.log(req.body);
+    // console.log(req.body);
     const result = validationResult(req);
     if (!result.isEmpty()) {
       console.log(result.array());
@@ -170,6 +172,18 @@ class AuthController {
         } catch (err) {
           console.error("Failed to notify admin about ambassador:", err);
         }
+      }
+
+      // after creating user
+      const { subject, html } = getWelcomeTemplate(user);
+      try {
+        await this.mailService.send({
+          to: user.email,
+          subject,
+          html,
+        });
+      } catch (err) {
+        console.error("Failed to send welcome email:", err);
       }
       // generate tokens
       const payload: JwtPayload = { sub: String(user.id), role: user.role };
@@ -283,10 +297,12 @@ class AuthController {
       // GENERATE TEMPORY TOKEN FOR PASSWORD RESET
       const resetToken = await this.tokenService.generateForgetPasswordToken({ email });
 
-      this.mailService.send({
-        to: email,
-        subject: "Password Reset",
-        html: `Hello ${user.firstName},<br><br>Please click on the link below to reset your password.<br><br><a href="${Config.DASHBOARD_DOMAIN}/reset-password/${resetToken}">Reset Password</a>`,
+      const { subject, html } = getPasswordResetTemplate(user, resetToken);
+
+      await this.mailService.send({
+        to: user.email!,
+        subject,
+        html,
       });
 
       return res.status(200).json({
