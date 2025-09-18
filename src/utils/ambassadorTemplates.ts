@@ -50,7 +50,9 @@ export const getAmbassadorTemplate = (
           </tr>
           <tr style="border-bottom: 1px solid #eee;">
             <td style="padding: 10px 0; font-weight: bold; color: #746CAD;">Gender:</td>
-            <td style="padding: 10px 0;">${user.gender || "N/A"}</td>
+            <td style="padding: 10px 0;text-transform: capitalize;">${
+              user.gender || "N/A"
+            }</td>
           </tr>
           <tr style="border-bottom: 1px solid #eee;">
             <td style="padding: 10px 0; font-weight: bold; color: #746CAD;">Date of Birth:</td>
