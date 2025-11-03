@@ -27,10 +27,17 @@ class CloudinaryStorageService implements FileStorage {
 
       console.log("Cloudinary Result: ", result.url);
       return result.secure_url;
-    } catch (error) {
-      console.log(error);
-      const err = createHttpError(400, "Failed to upload image to Cloudinary");
-      throw err;
+    } catch (error: any) {
+      console.error("❌ Cloudinary Upload Failed:", error?.message || error);
+
+      if (error?.name === "TimeoutError") {
+        throw createHttpError(504, "Cloudinary upload timed out");
+      }
+
+      throw createHttpError(
+        400,
+        `Failed to upload image to Cloudinary: ${error?.message || "Unknown error"}`
+      );
     }
   }
 

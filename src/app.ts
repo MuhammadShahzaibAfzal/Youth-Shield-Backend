@@ -33,11 +33,11 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(
-  fileUpload({
-    limits: { fileSize: 10 * 1024 * 1024 },
-  })
-);
+// app.use(
+//   fileUpload({
+//     limits: { fileSize: 10 * 1024 * 1024 },
+//   })
+// );
 
 app.get("/", (req: Request, res: Response) => {
   res.send("YouthShield BACKEND API");

@@ -28,7 +28,23 @@ class NewsController {
       });
 
       res.json({ url });
-    } catch (error) {
+    } catch (error: any) {
+      console.log("ERRROR : ", error);
+      if (error.status === 504) {
+        return next(
+          createHttpError(504, "Image upload took too long, please try again.")
+        );
+      }
+
+      if (error.status === 400) {
+        return next(
+          createHttpError(
+            400,
+            "Unable to upload image, please check file size or format."
+          )
+        );
+      }
+
       next(error);
     }
   }
@@ -69,7 +85,23 @@ class NewsController {
         cardImage: cardUrl,
       });
       res.status(201).json(news);
-    } catch (error) {
+    } catch (error: any) {
+      console.log("ERROR in creating news : ", error);
+      if (error.status === 504 || error.statusCode === 504) {
+        return next(
+          createHttpError(504, "Image upload took too long, please try again.")
+        );
+      }
+
+      if (error.status === 400 || error.statusCode === 400) {
+        return next(
+          createHttpError(
+            400,
+            "Unable to upload image, please check file size or format."
+          )
+        );
+      }
+
       next(error);
     }
   }
@@ -172,7 +204,22 @@ class NewsController {
         cardImage: cardUrl ? cardUrl : newsExist.cardImage,
       });
       res.status(200).json(news);
-    } catch (error) {
+    } catch (error: any) {
+      if (error.status === 504) {
+        return next(
+          createHttpError(504, "Image upload took too long, please try again.")
+        );
+      }
+
+      if (error.status === 400) {
+        return next(
+          createHttpError(
+            400,
+            "Unable to upload image, please check file size or format."
+          )
+        );
+      }
+
       next(error);
     }
   }
