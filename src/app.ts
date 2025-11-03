@@ -18,6 +18,7 @@ import independentResourceRouter from "./routes/indepResourceRoutes";
 import researchRegistrationRouter from "./routes/registerResearchRoutes";
 import anonymousScreeningSubmissionRouter from "./routes/anonymousScreeningSubmission";
 import newsLetterRouter from "./routes/newsletterRoutes";
+import fileUpload from "express-fileupload";
 
 const app = express();
 
@@ -32,6 +33,11 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(
+  fileUpload({
+    limits: { fileSize: 10 * 1024 * 1024 },
+  })
+);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("YouthShield BACKEND API");
