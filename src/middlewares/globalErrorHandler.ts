@@ -11,7 +11,8 @@ const globalErrorHandler = (
 ) => {
   const errorId = uuidv4();
   const statusCode = err.statusCode || err.status || 500;
-  const isProduction = process.env.NODE_ENV === "production";
+  // const isProduction = process.env.NODE_ENV === "production";
+  const isProduction = false;
   let message = "Internal server error";
   if (statusCode === 400) {
     message = err.message;
